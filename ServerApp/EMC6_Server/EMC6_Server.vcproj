@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="EMC6_Server"
-	ProjectGUID="{B3CF8104-A137-4078-A089-4C615E0251F8}"
+	ProjectGUID="{B8D4757A-B463-4F52-AACA-B25457EE4020}"
 	RootNamespace="EMC6_Server"
 	Keyword="MFCProj"
 	TargetFrameworkVersion="196613"

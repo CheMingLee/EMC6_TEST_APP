@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="EMC6_Broadcast"
-	ProjectGUID="{EDE78C79-8318-466B-AFDF-413AF802CA80}"
-	RootNamespace="EMC6_Broadcast"
+	Name="EMC6_Client"
+	ProjectGUID="{B141031C-A41A-470E-8E58-F550F40E2148}"
+	RootNamespace="EMC6_Client"
 	Keyword="MFCProj"
 	TargetFrameworkVersion="196613"
 	>
@@ -186,11 +186,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\EMC6_Broadcast.cpp"
+				RelativePath=".\EMC6_Client.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\EMC6_BroadcastDlg.cpp"
+				RelativePath=".\EMC6_ClientDlg.cpp"
 				>
 			</File>
 			<File
@@ -220,11 +220,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\EMC6_Broadcast.h"
+				RelativePath=".\EMC6_Client.h"
 				>
 			</File>
 			<File
-				RelativePath=".\EMC6_BroadcastDlg.h"
+				RelativePath=".\EMC6_ClientDlg.h"
 				>
 			</File>
 			<File
@@ -246,15 +246,15 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\res\EMC6_Broadcast.ico"
+				RelativePath=".\res\EMC6_Client.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\EMC6_Broadcast.rc"
+				RelativePath=".\EMC6_Client.rc"
 				>
 			</File>
 			<File
-				RelativePath=".\res\EMC6_Broadcast.rc2"
+				RelativePath=".\res\EMC6_Client.rc2"
 				>
 			</File>
 		</Filter>
