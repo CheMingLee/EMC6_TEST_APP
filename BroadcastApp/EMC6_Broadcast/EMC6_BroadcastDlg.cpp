@@ -5,6 +5,10 @@
 #include "stdafx.h"
 #include "EMC6_Broadcast.h"
 #include "EMC6_BroadcastDlg.h"
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#pragma comment (lib, "Ws2_32.lib")
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -98,6 +102,10 @@ BOOL CEMC6_BroadcastDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+    WSADATA wsaData;
+	int iResult;
+
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
