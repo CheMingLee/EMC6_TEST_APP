@@ -264,5 +264,9 @@
 		</File>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="EMC6_Broadcast.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

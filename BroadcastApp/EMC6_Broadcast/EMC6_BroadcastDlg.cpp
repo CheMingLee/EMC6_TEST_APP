@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "EMC6_Broadcast.h"
 #include "EMC6_BroadcastDlg.h"
+#include "ctrlcard.h"
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
@@ -13,7 +14,6 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
 
 // CAboutDlg dialog used for App About
 
@@ -60,6 +60,7 @@ CEMC6_BroadcastDlg::CEMC6_BroadcastDlg(CWnd* pParent /*=NULL*/)
 void CEMC6_BroadcastDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_PROGRESS_BROADCAST, m_progress);
 }
 
 BEGIN_MESSAGE_MAP(CEMC6_BroadcastDlg, CDialog)
@@ -67,6 +68,7 @@ BEGIN_MESSAGE_MAP(CEMC6_BroadcastDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_FIRST_SHOWN, OnDialogShown)
 END_MESSAGE_MAP()
 
 
@@ -106,6 +108,26 @@ BOOL CEMC6_BroadcastDlg::OnInitDialog()
 	int iResult;
 
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (iResult != 0) {
+        CString str;
+
+		str.Format("WSAStartup failed with error: %d", iResult);
+		MessageBox(str);
+		EndDialog(IDCANCEL);
+    }
+
+	char CurPath[MAX_PATH];
+
+	memset(CurPath, 0, MAX_PATH);
+	GetCurrentDirectory(MAX_PATH, CurPath);
+	m_strINIpath.Format("%s", CurPath);
+	m_strINIpath.Append("\\INI\\Dev_ip.ini");
+	
+	for(int i = 0;i < MAX_DEVICE;i++)
+		memset(m_Address[i], 0, 256);
+
+	m_dwCardNum = 0;
+	PostMessage(WM_FIRST_SHOWN);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -159,3 +181,126 @@ HCURSOR CEMC6_BroadcastDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+BOOL CEMC6_BroadcastDlg::Search_Dev(int iRetryTime,int iSearchTime) //ms
+{
+	//Setup Broadcast
+    SOCKET sock;
+	struct sockaddr_in Recv_addr;
+
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
+    char broadcast = '1';
+    if(setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) < 0)
+    {
+        MessageBox("Error in setting Broadcast option");
+        closesocket(sock);
+        return FALSE;
+    }
+
+    Recv_addr.sin_family = AF_INET;
+    Recv_addr.sin_port = htons(PORT_BROADCAST);
+    Recv_addr.sin_addr.s_addr = INADDR_BROADCAST;
+
+	if(iRetryTime > 0 && iSearchTime > 0)
+	{
+		m_progress.SetRange(0, iRetryTime * iSearchTime);
+	}
+	else
+		return FALSE;
+	
+	//Send Cmd
+	int i, j;
+	char sndbuffer[1024], rcvbuffer[1024];
+	int iSendSize, iRecvSize;
+	fd_set oRead;
+	int iReady;
+	timeval timeout;	
+	LARGE_INTEGER litmp;
+	LONGLONG QPart1,QPart2;
+	double dfMinus,dfFreq,dfTime;
+
+	QueryPerformanceFrequency(&litmp);
+	dfFreq = (double)litmp.QuadPart;
+
+	i = 0;
+	while(i < iRetryTime)
+	{
+		memset(sndbuffer, 0, sizeof(sndbuffer));
+		*((unsigned short *)sndbuffer) = 0xffff;
+		*((unsigned short *)sndbuffer + 1) = CMD_GET_IP_ADDRESS;
+		*((unsigned short *)sndbuffer + 2) = 0;
+		iSendSize = 6;
+		sendto(sock, sndbuffer, iSendSize, 0, (sockaddr*)&Recv_addr, sizeof(Recv_addr));
+
+		timeout.tv_sec = 0;
+		timeout.tv_usec = 1000;
+		QueryPerformanceCounter(&litmp);
+		QPart1 = litmp.QuadPart;
+		do
+		{
+			FD_ZERO(&oRead);
+			FD_SET(sock,&oRead);
+			iReady = select(sock + 1,&oRead,NULL,NULL,&timeout);
+			if(iReady > 0 && FD_ISSET(sock,&oRead))
+			{
+				memset(rcvbuffer, 0, sizeof(rcvbuffer));
+				iRecvSize = recv(sock, rcvbuffer, sizeof(rcvbuffer), 0);
+				if(iRecvSize >= 6)
+				{
+					unsigned short usSN,usCmd,usSize;
+
+					usSN = *((unsigned short *)rcvbuffer);
+					usCmd = *((unsigned short *)rcvbuffer + 1);
+					usSize = *((unsigned short *)rcvbuffer + 2);				
+					if(usSN == 0xffff && usCmd == CMD_GET_IP_ADDRESS)
+					{
+						char szBuf[256];
+						int iStrLen = strlen(rcvbuffer + 6);
+						if(iStrLen == usSize && iStrLen < 255)
+						{
+							memcpy(szBuf,rcvbuffer + 6,iStrLen);
+							szBuf[iStrLen] = 0;
+							for(j = 0;j < (int)m_dwCardNum;i++)
+							{
+								if(strcmp(szBuf,&m_Address[i][0]) == 0)
+									break;
+							}
+							if(j == m_dwCardNum)
+							{
+								memcpy(&m_Address[m_dwCardNum][0],szBuf,iStrLen);
+								m_dwCardNum++;
+							}
+						}
+					}
+				}
+			}
+			QueryPerformanceCounter(&litmp);
+			QPart2 = litmp.QuadPart;		
+			dfMinus = (double)(QPart2 - QPart1);
+			dfTime = dfMinus / dfFreq * 1000.;
+			m_progress.SetPos(iSearchTime * i + (int)dfTime);
+		}while(dfTime < iSearchTime);
+		i++;
+	}
+	closesocket(sock);
+	return TRUE;
+}
+
+LRESULT CEMC6_BroadcastDlg::OnDialogShown(WPARAM, LPARAM)
+{
+	int iRet, i;
+
+	iRet = Search_Dev(2,2000);
+	if(iRet)
+	{
+		CString str;
+
+		for(i = 0;i < 1;i++)
+		{
+			str.Format("DEV%d", i);
+			WritePrivateProfileString("IP", str, m_Address[i], m_strINIpath);
+		}
+	}
+	EndDialog(IDCANCEL);
+	
+	return 0;
+}
