@@ -4,6 +4,13 @@
 
 #pragma once
 
+#include "ctrlcard.h"
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#define PORT_SERVER 10000
+#define PORT_BROADCAST 10001
+#define WM_FIRST_SHOWN WM_USER + 100
 
 // CEMC6_ServerDlg dialog
 class CEMC6_ServerDlg : public CDialog
@@ -29,4 +36,13 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnDestroy();
+	LRESULT OnDialogShown(WPARAM, LPARAM);
+	BOOL StartServer();
+	void SetPeekMsg();
+	SOCKET m_sock_udp_rcvr;
+	sockaddr_in m_udp_rcvr;
+	SOCKET m_sock_server;
+	sockaddr_in m_tcp_server;
 };

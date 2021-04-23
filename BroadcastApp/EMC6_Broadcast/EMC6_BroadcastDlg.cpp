@@ -121,7 +121,7 @@ BOOL CEMC6_BroadcastDlg::OnInitDialog()
 	memset(CurPath, 0, MAX_PATH);
 	GetCurrentDirectory(MAX_PATH, CurPath);
 	m_strINIpath.Format("%s", CurPath);
-	m_strINIpath.Append("\\INI\\Dev_ip.ini");
+	m_strINIpath.Append("\\DevIPAddress.ini");
 	
 	for(int i = 0;i < MAX_DEVICE;i++)
 		memset(m_Address[i], 0, 256);
@@ -282,6 +282,7 @@ BOOL CEMC6_BroadcastDlg::Search_Dev(int iRetryTime,int iSearchTime) //ms
 		i++;
 	}
 	closesocket(sock);
+
 	return TRUE;
 }
 
@@ -294,12 +295,15 @@ LRESULT CEMC6_BroadcastDlg::OnDialogShown(WPARAM, LPARAM)
 	{
 		CString str;
 
-		for(i = 0;i < 1;i++)
+		for(i = 0;i < m_dwCardNum;i++)
 		{
 			str.Format("DEV%d", i);
-			WritePrivateProfileString("IP", str, m_Address[i], m_strINIpath);
+			WritePrivateProfileString("DEVICE", str, m_Address[i], m_strINIpath);
 		}
 	}
+
+	WSACleanup();
+
 	EndDialog(IDCANCEL);
 	
 	return 0;
