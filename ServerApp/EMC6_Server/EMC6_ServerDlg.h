@@ -10,7 +10,6 @@
 
 #define PORT_SERVER 10000
 #define PORT_BROADCAST 10001
-#define WM_FIRST_SHOWN WM_USER + 100
 
 // CEMC6_ServerDlg dialog
 class CEMC6_ServerDlg : public CDialog
@@ -40,9 +39,14 @@ public:
 	afx_msg void OnDestroy();
 	LRESULT OnDialogShown(WPARAM, LPARAM);
 	BOOL StartServer();
+	void GetHostIP(char *IPName);
 	void SetPeekMsg();
+	bool m_bActive;
 	SOCKET m_sock_udp_rcvr;
 	sockaddr_in m_udp_rcvr;
 	SOCKET m_sock_server;
 	sockaddr_in m_tcp_server;
+	afx_msg void OnBnClickedButtonStart();
+	afx_msg void OnBnClickedButtonClose();
+	afx_msg void OnBnClickedButtonExit();
 };
