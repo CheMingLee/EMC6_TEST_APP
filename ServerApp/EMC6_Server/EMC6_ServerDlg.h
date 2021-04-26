@@ -39,7 +39,8 @@ public:
 	afx_msg void OnDestroy();
 	LRESULT OnDialogShown(WPARAM, LPARAM);
 	BOOL StartServer();
-	void GetHostIP(char *IPName);
+	void CloseServer();
+	int GetHostIP(char *IPName);
 	void SetPeekMsg();
 	bool m_bActive;
 	SOCKET m_sock_udp_rcvr;

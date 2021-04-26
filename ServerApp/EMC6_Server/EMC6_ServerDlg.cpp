@@ -165,17 +165,7 @@ void CEMC6_ServerDlg::OnDestroy()
 {
 	CDialog::OnDestroy();
 	
-	if(m_sock_udp_rcvr != INVALID_SOCKET)
-	{
-		closesocket(m_sock_udp_rcvr);
-	}
-	
-	if(m_sock_server != INVALID_SOCKET)
-	{
-		closesocket(m_sock_server);
-	}
-	
-	WSACleanup();
+	CloseServer();
 }
 
 BOOL CEMC6_ServerDlg::StartServer()
@@ -295,7 +285,7 @@ void CEMC6_ServerDlg::SetPeekMsg()
 	}
 }
 
-void CEMC6_ServerDlg::GetHostIP(char *IPName)
+int CEMC6_ServerDlg::GetHostIP(char *IPName)
 {
 	char hostName[256];
     struct hostent* pHost;
@@ -305,6 +295,8 @@ void CEMC6_ServerDlg::GetHostIP(char *IPName)
     pHost = gethostbyname(hostName);
     memcpy(&SocketAddress.sin_addr, pHost->h_addr_list[0], pHost->h_length);
     strcpy(IPName, inet_ntoa(SocketAddress.sin_addr));
+
+	return strlen(IPName);
 }
 
 void CEMC6_ServerDlg::OnBnClickedButtonStart()
@@ -314,7 +306,7 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 	int ilen = sizeof(struct sockaddr_in);
 	char szIPName[256];
 	char sndbuffer[1024], rcvbuffer[1024];
-	int iSendSize, iRecvSize;
+	int iSendSize, iRecvSize, iDataSize;
 
 	m_bActive = false;
 
@@ -333,7 +325,7 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 	GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(strDateTime + str);
 
 	memset(szIPName, 0, sizeof(szIPName));
-	GetHostIP(szIPName);
+	iDataSize = GetHostIP(szIPName);
 
 	m_bActive = true;
 	// main loop
@@ -344,26 +336,38 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 		iRecvSize = recvfrom(m_sock_udp_rcvr, rcvbuffer, sizeof(rcvbuffer), 0, (sockaddr*)&m_udp_rcvr, &ilen);
 		if(iRecvSize >= 6)
 		{
-			unsigned short usSN,usCmd,usSize;
+			unsigned short usSN, usCmd, usSize;
 
 			usSN = *((unsigned short *)rcvbuffer);
 			usCmd = *((unsigned short *)rcvbuffer + 1);
 			usSize = *((unsigned short *)rcvbuffer + 2);
-			if(usSN == 0xffff && usCmd == CMD_GET_IP_ADDRESS)			
+			if(usSN == 0xffff && usCmd == CMD_GET_IP_ADDRESS)
 			{
 				strDateTime = CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M:%S - ");
-				str.Format("Receive: %d Bytes\nSN %x, Cmd %x, DataSize %d", iRecvSize, usSN, usCmd, usSize);
+				str.Format("Receive: %d Bytes\nCmd: CMD_GET_IP_ADDRESS", iRecvSize);
 				GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(strDateTime + str);
 				
-				//memset(sndbuffer, 0, sizeof(sndbuffer));
-				//*((unsigned short *)sndbuffer) = 0xffff;
-				//*((unsigned short *)sndbuffer + 1) = CMD_GET_IP_ADDRESS;
-				//*((unsigned short *)sndbuffer + 2) = 0;
+				memset(sndbuffer, 0, sizeof(sndbuffer));
+				*((unsigned short *)sndbuffer) = 0xffff;
+				*((unsigned short *)sndbuffer + 1) = CMD_GET_IP_ADDRESS;
+				*((unsigned short *)sndbuffer + 2) = (unsigned short)iDataSize;
+				memcpy(sndbuffer+6, szIPName, iDataSize);
+				iSendSize = iDataSize + 6;
+				if(sendto(m_sock_udp_rcvr, sndbuffer, iSendSize, 0, (sockaddr*)&m_udp_rcvr, sizeof(m_udp_rcvr)) < 0)
+				{
+					str.Format("Send IP error: %d", WSAGetLastError());
+				}
+				else
+				{
+					str.Format("Send: %d Bytes\nIP address: %s", iRecvSize, szIPName);
+				}
+				strDateTime = CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M:%S - ");
+				GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(strDateTime + str);
 			}
 			else
 			{
 				strDateTime = CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M:%S - ");
-				str.Format("Receive: %d Bytes\nSN %x, Cmd %x, DataSize %d", iRecvSize, usSN, usCmd, usSize);
+				str.Format("Receive: %d Bytes\nSN: 0x%x, Cmd: 0x%x, DataSize: %d Bytes", iRecvSize, usSN, usCmd, usSize);
 				GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(strDateTime + str);
 			}
 		}
@@ -372,9 +376,29 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 
 void CEMC6_ServerDlg::OnBnClickedButtonClose()
 {
-	// TODO: 在此加入控制項告知處理常式程式碼
+	CString str, strDateTime;
+	
 	m_bActive = false;
 
+	strDateTime = CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M:%S - ");
+	str = "Server closing";
+	GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(strDateTime + str);
+
+	CloseServer();
+
+	strDateTime = CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M:%S - ");
+	str = "Server closed";
+	GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(strDateTime + str);
+}
+
+void CEMC6_ServerDlg::OnBnClickedButtonExit()
+{
+	m_bActive = false;
+	EndDialog(IDCANCEL);
+}
+
+void CEMC6_ServerDlg::CloseServer()
+{
 	if(m_sock_udp_rcvr != INVALID_SOCKET)
 	{
 		closesocket(m_sock_udp_rcvr);
@@ -386,11 +410,4 @@ void CEMC6_ServerDlg::OnBnClickedButtonClose()
 	}
 	
 	WSACleanup();
-}
-
-void CEMC6_ServerDlg::OnBnClickedButtonExit()
-{
-	// TODO: 在此加入控制項告知處理常式程式碼
-	m_bActive = false;
-	EndDialog(IDCANCEL);
 }
