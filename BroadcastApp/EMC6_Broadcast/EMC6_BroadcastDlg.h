@@ -43,4 +43,5 @@ public:
 	char m_Address[MAX_DEVICE][256]; // 儲存各設備之 IP 位址
 	LRESULT OnDialogShown(WPARAM, LPARAM);
 	CString m_strINIpath;
+	void GetINIFilePath();
 };

@@ -11,6 +11,8 @@
 #define PORT_SERVER 10000
 #define PORT_BROADCAST 10001
 
+DWORD WINAPI EchoHandler(void* sd_);
+
 // CEMC6_ServerDlg dialog
 class CEMC6_ServerDlg : public CDialog
 {
@@ -43,6 +45,13 @@ public:
 	int GetHostIP(char *IPName);
 	void SetPeekMsg();
 	bool m_bActive;
+	bool m_bWSA;
+	void GetLogFilePath();
+	CString m_strLogPath;
+	HANDLE m_hLogFile;
+	BOOL OpenLog();
+	void CloseLog();
+	void WriteLog(CString strMsg);
 	SOCKET m_sock_udp_rcvr;
 	sockaddr_in m_udp_rcvr;
 	SOCKET m_sock_server;

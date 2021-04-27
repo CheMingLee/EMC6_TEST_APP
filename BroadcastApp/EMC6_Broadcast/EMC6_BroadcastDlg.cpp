@@ -116,12 +116,7 @@ BOOL CEMC6_BroadcastDlg::OnInitDialog()
 		EndDialog(IDCANCEL);
     }
 
-	char CurPath[MAX_PATH];
-
-	memset(CurPath, 0, MAX_PATH);
-	GetCurrentDirectory(MAX_PATH, CurPath);
-	m_strINIpath.Format("%s", CurPath);
-	m_strINIpath.Append("\\DevIPAddress.ini");
+	GetINIFilePath();
 	
 	for(int i = 0;i < MAX_DEVICE;i++)
 		memset(m_Address[i], 0, 256);
@@ -259,9 +254,9 @@ BOOL CEMC6_BroadcastDlg::Search_Dev(int iRetryTime,int iSearchTime) //ms
 						{
 							memcpy(szBuf,rcvbuffer + 6,iStrLen);
 							szBuf[iStrLen] = 0;
-							for(j = 0;j < (int)m_dwCardNum;i++)
+							for(j = 0;j < (int)m_dwCardNum;j++)
 							{
-								if(strcmp(szBuf,&m_Address[i][0]) == 0)
+								if(strcmp(szBuf,&m_Address[j][0]) == 0)
 									break;
 							}
 							if(j == m_dwCardNum)
@@ -307,4 +302,19 @@ LRESULT CEMC6_BroadcastDlg::OnDialogShown(WPARAM, LPARAM)
 	EndDialog(IDCANCEL);
 	
 	return 0;
+}
+
+void CEMC6_BroadcastDlg::GetINIFilePath()
+{
+	char szCurPath[MAX_PATH];
+	char drive[_MAX_DRIVE];
+	char dir[_MAX_DIR];
+	char fname[_MAX_FNAME];
+	char ext[_MAX_EXT];
+	
+	GetModuleFileName(NULL, szCurPath, MAX_PATH);
+	_splitpath_s(szCurPath, drive, dir, fname, ext);
+	m_strINIpath.Format("%s", drive);
+	m_strINIpath.Append(dir);
+	m_strINIpath.Append("DevIPAddress.ini");
 }
