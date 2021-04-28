@@ -58,6 +58,8 @@ DWORD WINAPI EchoHandler(void* sd_)
 			strTime = CTime::GetCurrentTime().Format("%H:%M:%S - ");
 			str = strTime + strLog;
 			str.Append("\n");
+			CWnd* m_pParentDialog = AfxGetApp()->m_pMainWnd; //Get parent dialog pointer directly
+			m_pParentDialog->GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
 
 			SetFilePointer(hLogFile, 0, NULL, FILE_END);
 			WriteFile(hLogFile, str, strlen(str), NULL, NULL);
@@ -535,6 +537,9 @@ void CEMC6_ServerDlg::WriteLog(CString strMsg)
 	str = strTime + strMsg;
 	str.Append("\n");
 	GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
+	//CWnd* m_pParentDialog = AfxGetApp()->m_pMainWnd; //Get parent dialog pointer directly
+	//m_pParentDialog->GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
+	//AfxGetApp()->m_pMainWnd->GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
 
     SetFilePointer(m_hLogFile, 0, NULL, FILE_END);
     WriteFile(m_hLogFile, str, strlen(str), NULL, NULL);
