@@ -11,7 +11,7 @@
 #define new DEBUG_NEW
 #endif
 
-
+CRITICAL_SECTION g_CS;
 CString g_strLogPath;
 HANDLE g_hLogFile;
 char g_ReadBuffer[1024];
@@ -42,8 +42,10 @@ void WriteLog(CString strMsg)
 	str.Append("\n");
 	AfxGetApp()->m_pMainWnd->GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
 
+	EnterCriticalSection(&g_CS);
     SetFilePointer(g_hLogFile, 0, NULL, FILE_END);
     WriteFile(g_hLogFile, str, strlen(str), NULL, NULL);
+	LeaveCriticalSection(&g_CS);
 }
 
 BOOL OpenLog()
@@ -91,6 +93,7 @@ int CmdTransfer(SOCKET sd_connect)
 	iReadSize = recv(sd_connect, g_ReadBuffer, 1024, 0);
     if (iReadSize > 0)
 	{
+		BOOL bSendRet;
 		CString strLog, strTmp;
 		unsigned short usSN, usCmd, usSize;
 
@@ -103,17 +106,8 @@ int CmdTransfer(SOCKET sd_connect)
 			usDataSize = 4;
 			
 			long lData = 0x11111111;
-			if(TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)&lData, usDataSize))
-			{
-				strTmp.Format("0x%x", lData);
-				strLog.Append(strTmp);
-			}
-			else
-			{
-				strTmp.Format("Error: %d", WSAGetLastError());
-				strLog.Append(strTmp);
-			}
-			WriteLog(strLog);
+			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)&lData, usDataSize);
+			strTmp.Format("0x%x", lData);
 		}
 		else if(usCmd == CMD_GET_HEX_VERSION)
 		{
@@ -121,17 +115,8 @@ int CmdTransfer(SOCKET sd_connect)
 			usDataSize = 4;
 			
 			long lData = 0x22222222;
-			if(TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)&lData, usDataSize))
-			{
-				strTmp.Format("0x%x", lData);
-				strLog.Append(strTmp);
-			}
-			else
-			{
-				strTmp.Format("Error: %d", WSAGetLastError());
-				strLog.Append(strTmp);
-			}
-			WriteLog(strLog);
+			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)&lData, usDataSize);
+			strTmp.Format("0x%x", lData);
 		}
 		else if(usCmd == CMD_GET_STATUS)
 		{
@@ -141,33 +126,21 @@ int CmdTransfer(SOCKET sd_connect)
 			long lData[2];
 			lData[0] = 0;
 			lData[1] = 1;
-			if(TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)lData, usDataSize))
-			{
-				strTmp.Format("%d,%d", lData[0], lData[1]);
-				strLog.Append(strTmp);
-			}
-			else
-			{
-				strTmp.Format("Error: %d", WSAGetLastError());
-				strLog.Append(strTmp);
-			}
-			WriteLog(strLog);
+			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)lData, usDataSize);
+			strTmp.Format("%d,%d", lData[0], lData[1]);
 		}
 		else
 		{
 			strLog.Format("Cmd:0x%x,DataSize:%d;", usCmd, usSize);
-			if(TCP_Send_Datas(sd_connect, usSN, usCmd, NULL, usDataSize))
-			{
-				strTmp.Format("Send:0x%x", NULL);
-				strLog.Append(strTmp);
-			}
-			else
-			{
-				strTmp.Format("Error: %d", WSAGetLastError());
-				strLog.Append(strTmp);
-			}			
-			WriteLog(strLog);
+			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, NULL, usDataSize);
+			strTmp.Format("Send:0x%x", NULL);
 		}
+
+		if(bSendRet <= 0)
+			strTmp.Format("Error: %d", WSAGetLastError());
+		
+		strLog.Append(strTmp);
+		WriteLog(strLog);
     }
 
 	return iReadSize;
@@ -283,6 +256,8 @@ BOOL CEMC6_ServerDlg::OnInitDialog()
 	m_sock_server = INVALID_SOCKET;
 	m_bWSA = false;
 	m_bActive = false;
+
+	InitializeCriticalSection(&g_CS);
 	
 	GetLogFilePath();
 	if(!OpenLog())
@@ -353,6 +328,7 @@ void CEMC6_ServerDlg::OnDestroy()
 	
 	CloseServer();
 	CloseLog();
+	DeleteCriticalSection(&g_CS);
 }
 
 BOOL CEMC6_ServerDlg::StartServer()
