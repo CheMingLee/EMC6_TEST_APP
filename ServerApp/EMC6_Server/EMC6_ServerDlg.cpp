@@ -12,59 +12,177 @@
 #endif
 
 
-DWORD WINAPI EchoHandler(void* sd_)
+CString g_strLogPath;
+HANDLE g_hLogFile;
+char g_ReadBuffer[1024];
+char g_SendBuffer[1024];
+
+void GetLogFilePath()
+{
+	char szCurPath[MAX_PATH];
+	char drive[_MAX_DRIVE];
+	char dir[_MAX_DIR];
+	char fname[_MAX_FNAME];
+	char ext[_MAX_EXT];
+	
+	GetModuleFileName(NULL, szCurPath, MAX_PATH);
+	_splitpath_s(szCurPath, drive, dir, fname, ext);
+	g_strLogPath.Format("%s", drive);
+	g_strLogPath.Append(dir);
+	g_strLogPath.Append(CTime::GetCurrentTime().Format("%Y%m%d"));
+	g_strLogPath.Append(".log");
+}
+
+void WriteLog(CString strMsg)
+{
+	CString str, strTime;
+
+	strTime = CTime::GetCurrentTime().Format("%H:%M:%S - ");
+	str = strTime + strMsg;
+	str.Append("\n");
+	AfxGetApp()->m_pMainWnd->GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
+
+    SetFilePointer(g_hLogFile, 0, NULL, FILE_END);
+    WriteFile(g_hLogFile, str, strlen(str), NULL, NULL);
+}
+
+BOOL OpenLog()
+{
+	LPCWSTR pstrPath;
+
+	pstrPath = g_strLogPath.AllocSysString();
+	g_hLogFile = CreateFileW(pstrPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if(g_hLogFile == INVALID_HANDLE_VALUE)
+		return FALSE;
+
+	return TRUE;
+}
+
+void CloseLog()
+{
+    if (g_hLogFile != NULL)
+    {
+		CloseHandle(g_hLogFile);
+        g_hLogFile = NULL;
+    }
+}
+
+BOOL TCP_Send_Datas(SOCKET sd_connect, unsigned short usSN, unsigned short usCmd, char *pData, unsigned short usDataSize)
+{
+	BOOL bRet = TRUE;
+
+	memset(g_SendBuffer, 0, sizeof(g_SendBuffer));
+	*((unsigned short *)g_SendBuffer) = usSN;
+	*((unsigned short *)g_SendBuffer + 1) = usCmd;
+	*((unsigned short *)g_SendBuffer + 2) = usDataSize;
+	memcpy(g_SendBuffer + 6, pData, usDataSize);
+	if(send(sd_connect, g_SendBuffer, usDataSize + 6, 0) < 0)
+		bRet = FALSE;
+
+	return bRet;
+}
+
+int CmdTransfer(SOCKET sd_connect)
+{
+    int iReadSize = 0;
+	unsigned short usDataSize = 0;
+
+	memset(g_ReadBuffer, 0, sizeof(g_ReadBuffer));
+	iReadSize = recv(sd_connect, g_ReadBuffer, 1024, 0);
+    if (iReadSize > 0)
+	{
+		CString strLog, strTmp;
+		unsigned short usSN, usCmd, usSize;
+
+		usSN = *((unsigned short *)g_ReadBuffer);
+		usCmd = *((unsigned short *)g_ReadBuffer + 1);
+		usSize = *((unsigned short *)g_ReadBuffer + 2);
+		if(usCmd == CMD_GET_CARD_VERSION)
+		{
+			strLog = "GET_CARD_VERSION;";
+			usDataSize = 4;
+			
+			long lData = 0x11111111;
+			if(TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)&lData, usDataSize))
+			{
+				strTmp.Format("0x%x", lData);
+				strLog.Append(strTmp);
+			}
+			else
+			{
+				strTmp.Format("Error: %d", WSAGetLastError());
+				strLog.Append(strTmp);
+			}
+			WriteLog(strLog);
+		}
+		else if(usCmd == CMD_GET_HEX_VERSION)
+		{
+			strLog = "GET_HEX_VERSION;";
+			usDataSize = 4;
+			
+			long lData = 0x22222222;
+			if(TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)&lData, usDataSize))
+			{
+				strTmp.Format("0x%x", lData);
+				strLog.Append(strTmp);
+			}
+			else
+			{
+				strTmp.Format("Error: %d", WSAGetLastError());
+				strLog.Append(strTmp);
+			}
+			WriteLog(strLog);
+		}
+		else if(usCmd == CMD_GET_STATUS)
+		{
+			strLog = "GET_STATUS;";
+			usDataSize = 8;
+			
+			long lData[2];
+			lData[0] = 0;
+			lData[1] = 1;
+			if(TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)lData, usDataSize))
+			{
+				strTmp.Format("%d,%d", lData[0], lData[1]);
+				strLog.Append(strTmp);
+			}
+			else
+			{
+				strTmp.Format("Error: %d", WSAGetLastError());
+				strLog.Append(strTmp);
+			}
+			WriteLog(strLog);
+		}
+		else
+		{
+			strLog.Format("Cmd:0x%x,DataSize:%d;", usCmd, usSize);
+			if(TCP_Send_Datas(sd_connect, usSN, usCmd, NULL, usDataSize))
+			{
+				strTmp.Format("Send:0x%x", NULL);
+				strLog.Append(strTmp);
+			}
+			else
+			{
+				strTmp.Format("Error: %d", WSAGetLastError());
+				strLog.Append(strTmp);
+			}			
+			WriteLog(strLog);
+		}
+    }
+
+	return iReadSize;
+}
+
+DWORD WINAPI CmdHandler(void* sd_)
 {
 	SOCKET sd = (SOCKET)sd_;
 
-    // Read data from client
-    char acReadBuffer[1024];
-    int nReadBytes;
-    do {
-        nReadBytes = recv(sd, acReadBuffer, 1024, 0);
-        if (nReadBytes > 0)
-		{
-			CString strLog;
-			unsigned short usSN, usCmd, usSize;
-
-			usSN = *((unsigned short *)acReadBuffer);
-			usCmd = *((unsigned short *)acReadBuffer + 1);
-			usSize = *((unsigned short *)acReadBuffer + 2);
-			
-			strLog.Format("Receive: %d Bytes. SN: 0x%x, Cmd: 0x%x, DataSize: %d Bytes", nReadBytes, usSN, usCmd, usSize);
-
-			char szCurPath[MAX_PATH];
-			char drive[_MAX_DRIVE];
-			char dir[_MAX_DIR];
-			char fname[_MAX_FNAME];
-			char ext[_MAX_EXT];
-			CString strDate, strLogPath;
-
-			strDate = CTime::GetCurrentTime().Format("%Y%m%d");
-			
-			GetModuleFileName(NULL, szCurPath, MAX_PATH);
-			_splitpath_s(szCurPath, drive, dir, fname, ext);
-			strLogPath.Format("%s", drive);
-			strLogPath.Append(dir);
-			strLogPath.Append(strDate);
-			strLogPath.Append(".log");
-
-			LPCWSTR pstrPath;
-
-			pstrPath = strLogPath.AllocSysString();
-			HANDLE hLogFile = CreateFileW(pstrPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-			CString str, strTime;
-
-			strTime = CTime::GetCurrentTime().Format("%H:%M:%S - ");
-			str = strTime + strLog;
-			str.Append("\n");
-			CWnd* m_pParentDialog = AfxGetApp()->m_pMainWnd; //Get parent dialog pointer directly
-			m_pParentDialog->GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
-
-			SetFilePointer(hLogFile, 0, NULL, FILE_END);
-			WriteFile(hLogFile, str, strlen(str), NULL, NULL);
-        }
-    } while (nReadBytes != 0);
+    // Read CMD from client
+    int iReadBytes = 0;
+    do
+	{
+		iReadBytes = CmdTransfer(sd);
+    } while (iReadBytes != 0);
 
 	return 0;
 }
@@ -160,26 +278,20 @@ BOOL CEMC6_ServerDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-	CString strLog;
-
+	g_hLogFile = NULL;
 	m_sock_udp_rcvr = INVALID_SOCKET;
 	m_sock_server = INVALID_SOCKET;
-	m_hLogFile = NULL;
 	m_bWSA = false;
 	m_bActive = false;
 	
 	GetLogFilePath();
 	if(!OpenLog())
 	{
+		CString strLog;
 		CString strDateTime = CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M:%S - ");
 		strLog.Format("Open log file failed!\nErrCode: %d", GetLastError());
 		MessageBox(strDateTime + strLog);
 		EndDialog(IDCANCEL);
-	}
-	else
-	{
-		strLog = "Log file opened!";
-		WriteLog(strLog);
 	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -239,11 +351,7 @@ void CEMC6_ServerDlg::OnDestroy()
 {
 	CDialog::OnDestroy();
 	
-	CString strLog;
-	
 	CloseServer();
-	strLog = "Exit!";
-	WriteLog(strLog);
 	CloseLog();
 }
 
@@ -389,9 +497,6 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 	int iSendSize, iRecvSize, iDataSize;
 
 	sockaddr_in sinRemote;
-
-	strLog = "Server starting!";
-	WriteLog(strLog);
 	
 	iRet = StartServer();
 	if(!iRet)
@@ -404,7 +509,7 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 
 	GetDlgItem(IDC_BUTTON_START)->EnableWindow(FALSE);
 
-	strLog = "Server running!";
+	strLog = "Server: started";
 	WriteLog(strLog);
 
 	memset(szIPName, 0, sizeof(szIPName));
@@ -428,8 +533,7 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 			usSize = *((unsigned short *)rcvbuffer + 2);
 			if(usSN == 0xffff && usCmd == CMD_GET_IP_ADDRESS)
 			{
-				strLog.Format("Receive: %d Bytes. Cmd: CMD_GET_IP_ADDRESS", iRecvSize);
-				WriteLog(strLog);
+				strLog = "GET_IP_ADDRESS;";
 				
 				memset(sndbuffer, 0, sizeof(sndbuffer));
 				*((unsigned short *)sndbuffer) = 0xffff;
@@ -439,17 +543,19 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 				iSendSize = iDataSize + 6;
 				if(sendto(m_sock_udp_rcvr, sndbuffer, iSendSize, 0, (sockaddr*)&m_udp_rcvr, sizeof(m_udp_rcvr)) < 0)
 				{
-					strLog.Format("Send IP error: %d", WSAGetLastError());
+					CString strTmp;
+					strTmp.Format("Send IP error: %d", WSAGetLastError());
+					strLog.Append(strTmp);
 				}
 				else
 				{
-					strLog.Format("Send: %d Bytes. IP address: %s", iSendSize, szIPName);
+					strLog.Append(szIPName);
 				}
 				WriteLog(strLog);
 			}
 			else
 			{
-				strLog.Format("Receive: %d Bytes. SN: 0x%x, Cmd: 0x%x, DataSize: %d Bytes", iRecvSize, usSN, usCmd, usSize);
+				strLog.Format("Cmd: 0x%x, DataSize: %d Bytes", usCmd, usSize);
 				WriteLog(strLog);
 			}
 		}
@@ -459,19 +565,15 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
         if (sd != INVALID_SOCKET)
 		{
             DWORD nThreadID;
-            CreateThread(0, 0, EchoHandler, (void*)sd, 0, &nThreadID);
+            CreateThread(0, 0, CmdHandler, (void*)sd, 0, &nThreadID);
         }
 	}
 }
 
 void CEMC6_ServerDlg::OnBnClickedButtonClose()
 {
-	CString strLog;
-
 	m_bActive = false;
 	CloseServer();
-	strLog = "Server closed!";
-	WriteLog(strLog);
 	GetDlgItem(IDC_BUTTON_START)->EnableWindow(TRUE);
 }
 
@@ -482,92 +584,23 @@ void CEMC6_ServerDlg::OnBnClickedButtonExit()
 }
 
 void CEMC6_ServerDlg::CloseServer()
-{
-	CString strLog;
-	
+{	
 	if(m_sock_udp_rcvr != INVALID_SOCKET)
 	{
 		closesocket(m_sock_udp_rcvr);
 		m_sock_udp_rcvr = INVALID_SOCKET;
-		strLog = "Socket: broadcast receiver closed!";
-		WriteLog(strLog);
 	}
 	
 	if(m_sock_server != INVALID_SOCKET)
 	{
 		closesocket(m_sock_server);
 		m_sock_server = INVALID_SOCKET;
-		strLog = "Socket: server closed!";
-		WriteLog(strLog);
+		WriteLog("Server: closed");
 	}
 	
 	if(m_bWSA)
 	{
 		WSACleanup();
 		m_bWSA = false;
-		strLog.Format("WSA clean up!");
-		WriteLog(strLog);
 	}
-}
-
-void CEMC6_ServerDlg::GetLogFilePath()
-{
-	char szCurPath[MAX_PATH];
-	char drive[_MAX_DRIVE];
-	char dir[_MAX_DIR];
-	char fname[_MAX_FNAME];
-	char ext[_MAX_EXT];
-	CString strDate;
-
-	strDate = CTime::GetCurrentTime().Format("%Y%m%d");
-	
-	GetModuleFileName(NULL, szCurPath, MAX_PATH);
-	_splitpath_s(szCurPath, drive, dir, fname, ext);
-	m_strLogPath.Format("%s", drive);
-	m_strLogPath.Append(dir);
-	m_strLogPath.Append(strDate);
-	m_strLogPath.Append(".log");
-}
-
-void CEMC6_ServerDlg::WriteLog(CString strMsg)
-{
-	CString str, strTime;
-
-	strTime = CTime::GetCurrentTime().Format("%H:%M:%S - ");
-	str = strTime + strMsg;
-	str.Append("\n");
-	GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
-	//CWnd* m_pParentDialog = AfxGetApp()->m_pMainWnd; //Get parent dialog pointer directly
-	//m_pParentDialog->GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
-	//AfxGetApp()->m_pMainWnd->GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
-
-    SetFilePointer(m_hLogFile, 0, NULL, FILE_END);
-    WriteFile(m_hLogFile, str, strlen(str), NULL, NULL);
-}
-
-BOOL CEMC6_ServerDlg::OpenLog()
-{
-	LPCWSTR pstrPath;
-
-	pstrPath = m_strLogPath.AllocSysString();
-
-	m_hLogFile = CreateFileW(pstrPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    if(m_hLogFile == INVALID_HANDLE_VALUE)
-		return FALSE;
-
-	return TRUE;
-}
-
-void CEMC6_ServerDlg::CloseLog()
-{
-    if (m_hLogFile != NULL)
-    {
-        CString strLog;
-		
-		strLog = "Log file closed!";
-		WriteLog(strLog);
-		
-		CloseHandle(m_hLogFile);
-        m_hLogFile = NULL;
-    }
 }
