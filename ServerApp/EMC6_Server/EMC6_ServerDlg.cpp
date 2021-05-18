@@ -100,7 +100,53 @@ int CmdTransfer(SOCKET sd_connect)
 		usSN = *((unsigned short *)g_ReadBuffer);
 		usCmd = *((unsigned short *)g_ReadBuffer + 1);
 		usSize = *((unsigned short *)g_ReadBuffer + 2);
-		if(usCmd == CMD_GET_CARD_VERSION)
+		if (usCmd == CMD_GET_LIST_SIZE)
+		{
+
+		}
+		else if(usCmd == CMD_RS232_TEST)
+		{
+
+		}
+		else if(usCmd == CMD_GET_LABEL)
+		{
+
+		}
+		else if(usCmd == CMD_GET_COUNT)
+		{
+
+		}
+		else if(usCmd == CMD_GET_HEAD_STATUS)
+		{
+
+		}
+		else if(usCmd == CMD_GET_HEX_VERSION)
+		{
+			strLog = "GET_HEX_VERSION;";
+			usDataSize = 4;
+			
+			long lData = 0x22222222;
+
+			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)&lData, usDataSize);
+			strTmp.Format("0x%x", lData);
+		}
+		else if(usCmd == CMD_GET_HI_DATA)
+		{
+
+		}
+		else if(usCmd == CMD_GET_INPUT_POINTER)
+		{
+
+		}
+		else if(usCmd == CMD_GET_IO_STATUS)
+		{
+
+		}
+		else if(usCmd == CMD_GET_LIST_SPACE)
+		{
+
+		}
+		else if(usCmd == CMD_GET_CARD_VERSION)
 		{
 			strLog = "GET_CARD_VERSION;";
 			usDataSize = 4;
@@ -109,14 +155,13 @@ int CmdTransfer(SOCKET sd_connect)
 			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)&lData, usDataSize);
 			strTmp.Format("0x%x", lData);
 		}
-		else if(usCmd == CMD_GET_HEX_VERSION)
+		else if(usCmd == CMD_GET_SERIAL_NUMBER)
 		{
-			strLog = "GET_HEX_VERSION;";
-			usDataSize = 4;
-			
-			long lData = 0x22222222;
-			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)&lData, usDataSize);
-			strTmp.Format("0x%x", lData);
+
+		}
+		else if(usCmd == CMD_GET_STARTSTOP_INFO)
+		{
+
 		}
 		else if(usCmd == CMD_GET_STATUS)
 		{
@@ -128,6 +173,194 @@ int CmdTransfer(SOCKET sd_connect)
 			lData[1] = 1;
 			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)lData, usDataSize);
 			strTmp.Format("%d,%d", lData[0], lData[1]);
+		}
+		else if(usCmd == CMD_GET_TIME)
+		{
+
+		}
+		else if(usCmd == CMD_GET_VALUE)
+		{
+
+		}
+		else if(usCmd == CMD_GET_WAIT_STATUS)
+		{
+
+		}
+		else if(usCmd == CMD_GET_WAVEFORM)
+		{
+
+		}
+		else if(usCmd == CMD_GET_XY_POS)
+		{
+
+		}
+		else if(usCmd == CMD_MEASUREMENT_STATUS)
+		{
+
+		}
+		else if(usCmd == CMD_READ_IO_PORT)
+		{
+
+		}
+		else if(usCmd == CMD_READ_PIXEL_AD)
+		{
+
+		}
+		else if(usCmd == CMD_READ_STATUS)
+		{
+
+		}
+		else if(usCmd == CMD_GET_MOTION_PULSE_COUNT)
+		{
+
+		}
+		else if(usCmd == CMD_GET_MOTION_INPOS)
+		{
+
+		}
+		else if(usCmd == CMD_GET_MOTION_STATUS)
+		{
+
+		}
+		else if(usCmd == CMD_GET_MOTION_ENCODER)
+		{
+
+		}
+		else if(usCmd == CMD_GET_MOTION_SENSOR)
+		{
+
+		}
+		else if(usCmd == CMD_DEBUG_WATCH_DOG)
+		{
+
+		}
+		else if(usCmd == CMD_MOTION_ARC_GET_SIZE)
+		{
+
+		}
+		else if(usCmd == CMD_GET_IO_STATUS_EX)
+		{
+
+		}
+		else if(usCmd == CMD_AUTO_CAL)
+		{
+
+		}
+		else if(usCmd == CMD_CONTROL_COMMAND)
+		{
+
+		}
+		else if(usCmd == CMD_GET_ENCODER_SPEED)
+		{
+
+		}
+		else if(usCmd == CMD_SET_HW_CFG)
+		{
+
+		}
+		else if(usCmd == CMD_GET_HW_CFG)
+		{
+
+		}
+		else if(usCmd == CMD_ERASE_FLASH)
+		{
+
+		}
+		else if(usCmd == CMD_READ_MEM)
+		{
+
+		}
+		else if(usCmd == CMD_MEM_TO_QSPI)
+		{
+
+		}
+		else if(usCmd == CMD_QSPI_TO_MEM)
+		{
+
+		}
+		else if(usCmd == CMD_SHA204_WAKEUP)
+		{
+
+		}
+		else if(usCmd == CMD_SHA204_SLEEP)
+		{
+
+		}
+		else if(usCmd == CMD_SHA204_EXECUTE_CMD)
+		{
+
+		}
+		else if(usCmd == CMD_SHA204_GET_RESPONSE)
+		{
+
+		}
+		else if(usCmd == CMD_GET_MOTION_INDEX_STATUS)
+		{
+
+		}
+		else if(usCmd == CMD_GET_CORRECT_GRID)
+		{
+
+		}
+		else if(usCmd == CMD_GET_DNA_CODE)
+		{
+
+		}
+		else if(usCmd == CMD_SET_DNA_CODE)
+		{
+
+		}
+		else if(usCmd == CMD_GET_ENCODER_POS_TRIGGER)
+		{
+
+		}
+		else if(usCmd == CMD_GET_ETAB_TRG_ENCODER)
+		{
+
+		}
+		else if(usCmd == CMD_GET_ETAB_REC_ENCODER)
+		{
+
+		}
+		else if(usCmd == CMD_GET_SELECT_LIST)
+		{
+
+		}
+		else if(usCmd == CMD_MOTION_ARC_GET_SIZE_EX)
+		{
+
+		}
+		else if(usCmd == CMD_GET_RECORD_MARK_TIME)
+		{
+
+		}
+		else if(usCmd == CMD_GET_RECORD_AMOF_DIFF)
+		{
+
+		}
+		else if(usCmd == CMD_GET_NG_RECORD)
+		{
+
+		}
+		else if(usCmd == CMD_GET_IPG_PD_READ)
+		{
+
+		}
+		else if(usCmd == CMD_GET_INT_FREQ_STATUS)
+		{
+
+		}
+		else if(usCmd == CMD_GET_ECM_SK_DATA)
+		{
+
+		}
+		else if(usCmd == CMD_GET_ECM_SK_DATA_EX)
+		{
+
+		}
+		else if(usCmd == CMD_GET_IP_ADDRESS)
+		{
+
 		}
 		else
 		{
