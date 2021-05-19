@@ -27,10 +27,10 @@ void GetLogFilePath()
 	
 	GetModuleFileName(NULL, szCurPath, MAX_PATH);
 	_splitpath_s(szCurPath, drive, dir, fname, ext);
-	g_strLogPath.Format("%s", drive);
+	g_strLogPath.Format(_T("%s"), drive);
 	g_strLogPath.Append(dir);
 	g_strLogPath.Append(CTime::GetCurrentTime().Format("%Y%m%d"));
-	g_strLogPath.Append(".log");
+	g_strLogPath.Append(_T(".log"));
 }
 
 void WriteLog(CString strMsg)
@@ -39,12 +39,12 @@ void WriteLog(CString strMsg)
 
 	strTime = CTime::GetCurrentTime().Format("%H:%M:%S - ");
 	str = strTime + strMsg;
-	str.Append("\n");
+	str.Append(_T("\n"));
 	AfxGetApp()->m_pMainWnd->GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
 
 	EnterCriticalSection(&g_CS);
     SetFilePointer(g_hLogFile, 0, NULL, FILE_END);
-    WriteFile(g_hLogFile, str, strlen(str), NULL, NULL);
+    WriteFile(g_hLogFile, str, str.GetLength(), NULL, NULL);
 	LeaveCriticalSection(&g_CS);
 }
 
@@ -74,10 +74,13 @@ BOOL TCP_Send_Datas(SOCKET sd_connect, unsigned short usSN, unsigned short usCmd
 	BOOL bRet = TRUE;
 
 	memset(g_SendBuffer, 0, sizeof(g_SendBuffer));
-	*((unsigned short *)g_SendBuffer) = usSN;
-	*((unsigned short *)g_SendBuffer + 1) = usCmd;
-	*((unsigned short *)g_SendBuffer + 2) = usDataSize;
-	memcpy(g_SendBuffer + 6, pData, usDataSize);
+	*((unsigned short *)&g_SendBuffer[0]) = usSN;
+	*((unsigned short *)&g_SendBuffer[2]) = usCmd;
+	*((unsigned short *)&g_SendBuffer[4]) = usDataSize;
+	
+	if(usDataSize > 0)
+		memcpy(&g_SendBuffer[6], pData, usDataSize);
+	
 	if(send(sd_connect, g_SendBuffer, usDataSize + 6, 0) < 0)
 		bRet = FALSE;
 
@@ -88,289 +91,654 @@ int CmdTransfer(SOCKET sd_connect)
 {
     int iReadSize = 0;
 	unsigned short usDataSize = 0;
+	long lData[32];
 
+	memset(lData, 0, sizeof(lData));
 	memset(g_ReadBuffer, 0, sizeof(g_ReadBuffer));
 	iReadSize = recv(sd_connect, g_ReadBuffer, 1024, 0);
     if (iReadSize > 0)
 	{
-		BOOL bSendRet;
+		BOOL bSendRet, bReplyNull;
 		CString strLog, strTmp;
 		unsigned short usSN, usCmd, usSize;
 
-		usSN = *((unsigned short *)g_ReadBuffer);
-		usCmd = *((unsigned short *)g_ReadBuffer + 1);
-		usSize = *((unsigned short *)g_ReadBuffer + 2);
+		bSendRet = TRUE;
+		bReplyNull = TRUE;
+		usSN = *((unsigned short *)&g_ReadBuffer[0]);
+		usCmd = *((unsigned short *)&g_ReadBuffer[2]);
+		usSize = *((unsigned short *)&g_ReadBuffer[4]);
 		if (usCmd == CMD_GET_LIST_SIZE)
 		{
-
+			strLog = "GET_LIST_SIZE;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_RS232_TEST)
 		{
-
+			strLog = "RS232_TEST;";
 		}
 		else if(usCmd == CMD_GET_LABEL)
 		{
-
+			strLog = "GET_LABEL;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_COUNT)
 		{
-
+			strLog = "GET_COUNT;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_HEAD_STATUS)
 		{
-
+			strLog = "GET_HEAD_STATUS;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_HEX_VERSION)
 		{
 			strLog = "GET_HEX_VERSION;";
 			usDataSize = 4;
-			
-			long lData = 0x22222222;
-
-			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)&lData, usDataSize);
-			strTmp.Format("0x%x", lData);
+			lData[0] = 0x00010101;
+			strTmp.Format(_T("0x%x"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_HI_DATA)
 		{
-
+			strLog = "GET_HI_DATA;";
+			usDataSize = 16;
+			lData[0] = 0;
+			lData[1] = 0;
+			lData[2] = 0;
+			lData[3] = 0;
+			strTmp.Format(_T("%d,%d,%d,%d"), lData[0], lData[1], lData[2], lData[3]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_INPUT_POINTER)
 		{
-
+			strLog = "GET_INPUT_POINTER;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_IO_STATUS)
 		{
-
+			strLog = "GET_IO_STATUS;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_LIST_SPACE)
 		{
-
+			strLog = "GET_LIST_SPACE;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_CARD_VERSION)
 		{
 			strLog = "GET_CARD_VERSION;";
 			usDataSize = 4;
-			
-			long lData = 0x11111111;
-			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)&lData, usDataSize);
-			strTmp.Format("0x%x", lData);
+			lData[0] = 0x00030500;
+			strTmp.Format(_T("0x%x"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_SERIAL_NUMBER)
 		{
-
+			strLog = "GET_SERIAL_NUMBER;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_STARTSTOP_INFO)
 		{
-
+			strLog = "GET_STARTSTOP_INFO;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_STATUS)
 		{
 			strLog = "GET_STATUS;";
 			usDataSize = 8;
-			
-			long lData[2];
 			lData[0] = 0;
-			lData[1] = 1;
-			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)lData, usDataSize);
-			strTmp.Format("%d,%d", lData[0], lData[1]);
+			lData[1] = 0;
+			strTmp.Format(_T("%d,%d"), lData[0], lData[1]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_TIME)
 		{
-
+			strLog = "GET_TIME;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_VALUE)
 		{
-
+			strLog = "GET_VALUE;";
+			usDataSize = 8;
+			lData[0] = 0;
+			lData[1] = 0;
+			strTmp.Format(_T("%d,%d"), lData[0], lData[1]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_WAIT_STATUS)
 		{
-
+			strLog = "GET_WAIT_STATUS;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_WAVEFORM)
 		{
+			unsigned long channel, stop;
 
+			channel = *((unsigned long *)&g_ReadBuffer[6]);
+			stop = *((unsigned long *)&g_ReadBuffer[10]);
+
+			strLog.Format(_T("GET_WAIT_STATUS,%d,%d;"), channel, stop);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_XY_POS)
 		{
-
+			strLog = "GET_XY_POS;";
+			usDataSize = 12;
+			lData[0] = 0;
+			lData[1] = 0;
+			lData[2] = 0;
+			strTmp.Format(_T("%d,%d,%d"), lData[0], lData[1], lData[2]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_MEASUREMENT_STATUS)
 		{
-
+			strLog = "MEASUREMENT_STATUS;";
+			usDataSize = 8;
+			lData[0] = 0;
+			lData[1] = 0;
+			strTmp.Format(_T("%d,%d"), lData[0], lData[1]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_READ_IO_PORT)
 		{
-
+			strLog = "READ_IO_PORT;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_READ_PIXEL_AD)
 		{
+			unsigned long pos;
 
+			pos = *((unsigned long *)&g_ReadBuffer[6]);
+
+			strLog.Format(_T("READ_PIXEL_AD,%d;"), pos);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_READ_STATUS)
 		{
-
+			strLog = "READ_STATUS;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_MOTION_PULSE_COUNT)
 		{
+			long lAxis;
 
+			lAxis = *((unsigned long *)&g_ReadBuffer[6]);
+
+			strLog.Format(_T("GET_MOTION_PULSE_COUNT,%d;"), lAxis);
+			usDataSize = 4;
+			lData[0] = 250;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_MOTION_INPOS)
 		{
+			long lAxis;
 
+			lAxis = *((unsigned long *)&g_ReadBuffer[6]);
+
+			strLog.Format(_T("GET_MOTION_INPOS,%d;"), lAxis);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_MOTION_STATUS)
 		{
+			long lAxis;
 
+			lAxis = *((unsigned long *)&g_ReadBuffer[6]);
+
+			strLog.Format(_T("GET_MOTION_STATUS,%d;"), lAxis);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_MOTION_ENCODER)
 		{
+			long lAxis;
 
+			lAxis = *((unsigned long *)&g_ReadBuffer[6]);
+
+			strLog.Format(_T("GET_MOTION_ENCODER,%d;"), lAxis);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_MOTION_SENSOR)
 		{
+			long lAxis;
 
+			lAxis = *((unsigned long *)&g_ReadBuffer[6]);
+
+			strLog.Format(_T("GET_MOTION_SENSOR,%d;"), lAxis);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_DEBUG_WATCH_DOG)
 		{
-
+			strLog = "DEBUG_WATCH_DOG;";
+			usDataSize = 24;
+			lData[0] = 0;
+			lData[1] = 0;
+			lData[2] = 0;
+			lData[3] = 0;
+			lData[4] = 0;
+			lData[5] = 0;
+			strTmp.Format(_T("%d,%d,%d,%d,%d,%d"), lData[0], lData[1], lData[2], lData[3], lData[4], lData[5]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_MOTION_ARC_GET_SIZE)
 		{
-
+			strLog = "MOTION_ARC_GET_SIZE;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_IO_STATUS_EX)
 		{
-
+			strLog = "GET_IO_STATUS_EX;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_AUTO_CAL)
 		{
+			unsigned long ulData[2];
 
+			ulData[0] = *((unsigned long *)&g_ReadBuffer[6]);
+			ulData[1] = *((unsigned long *)&g_ReadBuffer[10]);
+
+			strLog.Format(_T("AUTO_CAL,%d,%d;"), ulData[0], ulData[1]);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_CONTROL_COMMAND)
 		{
+			unsigned long ulData[3];
 
+			ulData[0] = *((unsigned long *)&g_ReadBuffer[6]);
+			ulData[1] = *((unsigned long *)&g_ReadBuffer[10]);
+			ulData[2] = *((unsigned long *)&g_ReadBuffer[14]);
+
+			strLog.Format(_T("CONTROL_COMMAND,%d,%d,%d;"), ulData[0], ulData[1], ulData[2]);
 		}
 		else if(usCmd == CMD_GET_ENCODER_SPEED)
 		{
-
+			strLog = "GET_ENCODER_SPEED;";
+			usDataSize = 8;
+			lData[0] = 0;
+			lData[1] = 0;
+			strTmp.Format(_T("%d,%d"), lData[0], lData[1]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_SET_HW_CFG)
 		{
+			unsigned short iByteCnt;
 
+			iByteCnt = *((unsigned short *)&g_ReadBuffer[6]);
+
+			strLog.Format(_T("SET_HW_CFG,%d;"), iByteCnt);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_HW_CFG)
 		{
+			unsigned long iIndex, iByteCnt;
 
+			iIndex = *((unsigned long *)&g_ReadBuffer[6]);
+			iByteCnt = *((unsigned long *)&g_ReadBuffer[10]);
+
+			strLog.Format(_T("GET_HW_CFG,%d,%d;"), iIndex, iByteCnt);
+			usDataSize = (unsigned short)iByteCnt;
+			if(iByteCnt > 0 && iByteCnt <= 128)
+			{
+				strTmp.Format(_T("0,%dBytes"), iByteCnt);
+				bReplyNull = FALSE;
+			}
 		}
 		else if(usCmd == CMD_ERASE_FLASH)
 		{
+			unsigned long iMode, ulAddr;
 
+			iMode = *((unsigned long *)&g_ReadBuffer[6]);
+			ulAddr = *((unsigned long *)&g_ReadBuffer[10]);
+
+			strLog.Format(_T("ERASE_FLASH,%d,%d;"), iMode, ulAddr);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_READ_MEM)
 		{
+			unsigned long iSize, ulOffset;
 
+			iSize = *((unsigned long *)&g_ReadBuffer[6]);
+			ulOffset = *((unsigned long *)&g_ReadBuffer[10]);
+
+			strLog.Format(_T("READ_MEM,%d,%d;"), iSize, ulOffset);
+			usDataSize = (unsigned short)iSize;
+			strTmp.Format(_T("0,%dBytes"), iSize);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_MEM_TO_QSPI)
 		{
+			unsigned long Addr, Size;
 
+			Addr = *((unsigned long *)&g_ReadBuffer[6]);
+			Size = *((unsigned long *)&g_ReadBuffer[10]);
+
+			strLog.Format(_T("MEM_TO_QSPI,%d,%d;"), Addr, Size);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_QSPI_TO_MEM)
 		{
+			unsigned long Addr, Size;
 
+			Addr = *((unsigned long *)&g_ReadBuffer[6]);
+			Size = *((unsigned long *)&g_ReadBuffer[10]);
+
+			strLog.Format(_T("QSPI_TO_MEM,%d,%d;"), Addr, Size);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_SHA204_WAKEUP)
 		{
-
+			strLog = "SHA204_WAKEUP;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_SHA204_SLEEP)
 		{
-
+			strLog = "SHA204_SLEEP;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_SHA204_EXECUTE_CMD)
 		{
-
+			strLog.Format(_T("SHA204_EXECUTE_CMD,%dBytes;"), usSize);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_SHA204_GET_RESPONSE)
 		{
-
+			strLog = "SHA204_GET_RESPONSE;";
+			usDataSize = 40;
+			strTmp.Format(_T("0,%dBytes"), usDataSize);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_MOTION_INDEX_STATUS)
 		{
-
+			strLog = "GET_MOTION_INDEX_STATUS;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_CORRECT_GRID)
 		{
-
+			strLog = "GET_CORRECT_GRID;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_DNA_CODE)
 		{
-
+			strLog = "GET_DNA_CODE;";
+			usDataSize = 8;
+			lData[0] = 0;
+			lData[1] = 0;
+			strTmp.Format(_T("%d,%d"), lData[0], lData[1]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_SET_DNA_CODE)
 		{
-
+			strLog = "SET_DNA_CODE;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_ENCODER_POS_TRIGGER)
 		{
-
+			strLog = "GET_ENCODER_POS_TRIGGER;";
+			usDataSize = 12;
+			lData[0] = 0;
+			lData[1] = 0;
+			lData[2] = 0;
+			strTmp.Format(_T("%d,%d,%d"), lData[0], lData[1], lData[2]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_ETAB_TRG_ENCODER)
 		{
+			long lIndex;
 
+			lIndex = *((long *)&g_ReadBuffer[6]);
+
+			strLog.Format(_T("GET_ETAB_TRG_ENCODER,%d;"), lIndex);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_ETAB_REC_ENCODER)
 		{
+			long lIndex;
 
+			lIndex = *((long *)&g_ReadBuffer[6]);
+
+			strLog.Format(_T("GET_ETAB_REC_ENCODER,%d;"), lIndex);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_SELECT_LIST)
 		{
-
+			strLog = "GET_SELECT_LIST;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_MOTION_ARC_GET_SIZE_EX)
 		{
-
+			strLog = "MOTION_ARC_GET_SIZE_EX;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_RECORD_MARK_TIME)
 		{
+			long lIndex;
 
+			lIndex = *((long *)&g_ReadBuffer[6]);
+
+			strLog.Format(_T("GET_RECORD_MARK_TIME,%d;"), lIndex);
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_RECORD_AMOF_DIFF)
 		{
+			long lSetInterval;
 
+			lSetInterval = *((long *)&g_ReadBuffer[6]);
+
+			strLog.Format(_T("GET_RECORD_AMOF_DIFF,%d;"), lSetInterval);
+			usDataSize = 36;
+			strTmp.Format(_T("0,%dBytes"), usDataSize);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_NG_RECORD)
 		{
-
+			strLog = "GET_NG_RECORD;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_IPG_PD_READ)
 		{
-
+			strLog = "GET_IPG_PD_READ;";
+			usDataSize = 4;
+			lData[0] = 0;
+			strTmp.Format(_T("%d"), lData[0]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_INT_FREQ_STATUS)
 		{
-
+			strLog = "GET_INT_FREQ_STATUS;";
+			usDataSize = 12;
+			lData[0] = 0;
+			lData[1] = 0;
+			lData[2] = 0;
+			strTmp.Format(_T("%d,%d,%d"), lData[0], lData[1], lData[2]);
+			bReplyNull = FALSE;
 		}
 		else if(usCmd == CMD_GET_ECM_SK_DATA)
 		{
+			unsigned int uiData[2];
 
+			uiData[0] = *((unsigned int *)&g_ReadBuffer[6]);
+			uiData[1] = *((unsigned int *)&g_ReadBuffer[10]);
+
+			strLog.Format(_T("GET_ECM_SK_DATA,%d,%d"), uiData[0], uiData[1]);
+			if(uiData[0] == 0 && uiData[1] == 0)
+			{
+				usDataSize = 4;
+				lData[0] = 0;
+				strTmp.Format(_T("%d"), lData[0]);
+				bReplyNull = FALSE;
+			}
+			else
+			{
+				usDataSize = sizeof(unsigned int) * uiData[1];
+				strTmp.Format(_T("0,%dBytes"), usDataSize);
+				bReplyNull = FALSE;
+			}
 		}
 		else if(usCmd == CMD_GET_ECM_SK_DATA_EX)
 		{
+			long lOffset, lSize;
 
+			lOffset = *((long *)&g_ReadBuffer[6]);
+			lSize = *((long *)&g_ReadBuffer[10]);
+
+			strLog.Format(_T("GET_ECM_SK_DATA_EX,%d,%d"), lOffset, lSize);
+			if(lOffset == 0 && lSize == 0)
+			{
+				usDataSize = 4;
+				lData[0] = 0;
+				strTmp.Format(_T("%d"), lData[0]);
+				bReplyNull = FALSE;
+			}
+			else
+			{
+				usDataSize = (unsigned short)lSize;
+				strTmp.Format(_T("0,%dBytes"), usDataSize);
+				bReplyNull = FALSE;
+			}
 		}
-		else if(usCmd == CMD_GET_IP_ADDRESS)
+		else if(usCmd == CMD_AUTO_CHANGE)
 		{
+			long lList;
 
+			lList = *((long *)&g_ReadBuffer[6]);
+			strLog.Format(_T("AUTO_CHANGE,%d;"), lList);
+		}
+		else if(usCmd == CMD_AUTO_CHANGE_POS)
+		{
+			// long lList;
+
+			// lList = *((long *)&g_ReadBuffer[6]);
+			// strLog.Format(_T("AUTO_CHANGE,%d;"), lList);
 		}
 		else
 		{
-			strLog.Format("Cmd:0x%x,DataSize:%d;", usCmd, usSize);
-			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, NULL, usDataSize);
-			strTmp.Format("Send:0x%x", NULL);
+			strLog.Format(_T("CMD0x%x,%dBytes;"), usCmd, usSize);
 		}
 
+		if(bReplyNull)
+		{
+			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, NULL, 0);
+			strTmp = "NULL";
+		}
+		else
+			bSendRet = TCP_Send_Datas(sd_connect, usSN, usCmd, (char *)lData, usDataSize);
+
 		if(bSendRet <= 0)
-			strTmp.Format("Error: %d", WSAGetLastError());
+			strTmp.Format(_T("Error:%d"), WSAGetLastError());
 		
 		strLog.Append(strTmp);
 		WriteLog(strLog);
@@ -497,7 +865,7 @@ BOOL CEMC6_ServerDlg::OnInitDialog()
 	{
 		CString strLog;
 		CString strDateTime = CTime::GetCurrentTime().Format("%Y/%m/%d %H:%M:%S - ");
-		strLog.Format("Open log file failed!\nErrCode: %d", GetLastError());
+		strLog.Format(_T("Open log file failed!\nErrCode: %d"), GetLastError());
 		MessageBox(strDateTime + strLog);
 		EndDialog(IDCANCEL);
 	}
@@ -576,7 +944,7 @@ BOOL CEMC6_ServerDlg::StartServer()
 	// Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
-		strLog.Format("WSAStartup failed with error: %d", iResult);
+		strLog.Format(_T("WSAStartup failed with error: %d"), iResult);
 		WriteLog(strLog);
 		return FALSE;
     }
@@ -586,7 +954,7 @@ BOOL CEMC6_ServerDlg::StartServer()
 	m_sock_udp_rcvr = socket(AF_INET, SOCK_DGRAM, 0);
 	if(m_sock_udp_rcvr == INVALID_SOCKET)
 	{	
-		strLog.Format("socket failed with error: %d", WSAGetLastError());
+		strLog.Format(_T("socket failed with error: %d"), WSAGetLastError());
 		WriteLog(strLog);
 		return FALSE;
 	}
@@ -603,7 +971,7 @@ BOOL CEMC6_ServerDlg::StartServer()
 	m_sock_server = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if(m_sock_server == INVALID_SOCKET)
 	{	
-		strLog.Format("socket failed with error: %d", WSAGetLastError());
+		strLog.Format(_T("socket failed with error: %d"), WSAGetLastError());
 		WriteLog(strLog);
 		return FALSE;
 	}
@@ -629,7 +997,7 @@ BOOL CEMC6_ServerDlg::StartServer()
 	iResult = bind(m_sock_udp_rcvr, (sockaddr*)&m_udp_rcvr, sizeof(m_udp_rcvr));
     if (iResult == SOCKET_ERROR)
 	{
-		strLog.Format("bind failed with error: %d", WSAGetLastError());
+		strLog.Format(_T("bind failed with error: %d"), WSAGetLastError());
 		WriteLog(strLog);
 		return FALSE;
     }
@@ -638,7 +1006,7 @@ BOOL CEMC6_ServerDlg::StartServer()
 	iResult = bind(m_sock_server, (sockaddr*)&m_tcp_server, sizeof(m_tcp_server));
 	if (iResult == SOCKET_ERROR)
 	{
-		strLog.Format("bind failed with error: %d", WSAGetLastError());
+		strLog.Format(_T("bind failed with error: %d"), WSAGetLastError());
 		WriteLog(strLog);
 		return FALSE;
 	}
@@ -647,7 +1015,7 @@ BOOL CEMC6_ServerDlg::StartServer()
 	iResult = listen(m_sock_server, 5);
 	if (iResult == SOCKET_ERROR)
 	{
-		strLog.Format("listen failed with error: %d", WSAGetLastError());
+		strLog.Format(_T("listen failed with error: %d"), WSAGetLastError());
 		WriteLog(strLog);
 		return FALSE;
 	}
@@ -656,7 +1024,7 @@ BOOL CEMC6_ServerDlg::StartServer()
 	iResult = ioctlsocket(m_sock_udp_rcvr, FIONBIO, &b);
 	if(iResult != 0)
 	{
-		strLog.Format("Set non blocking failed with error: %d", WSAGetLastError());
+		strLog.Format(_T("Set non blocking failed with error: %d"), WSAGetLastError());
 		WriteLog(strLog);
 		return FALSE;
 	}
@@ -664,7 +1032,7 @@ BOOL CEMC6_ServerDlg::StartServer()
 	iResult = ioctlsocket(m_sock_server, FIONBIO, &b);
 	if(iResult != 0)
 	{
-		strLog.Format("Set non blocking failed with error: %d", WSAGetLastError());
+		strLog.Format(_T("Set non blocking failed with error: %d"), WSAGetLastError());
 		WriteLog(strLog);
 		return FALSE;
 	}
@@ -753,18 +1121,20 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 				if(sendto(m_sock_udp_rcvr, sndbuffer, iSendSize, 0, (sockaddr*)&m_udp_rcvr, sizeof(m_udp_rcvr)) < 0)
 				{
 					CString strTmp;
-					strTmp.Format("Send IP error: %d", WSAGetLastError());
+					strTmp.Format(_T("Send IP error: %d"), WSAGetLastError());
 					strLog.Append(strTmp);
 				}
 				else
 				{
-					strLog.Append(szIPName);
+					CString strIP;
+					strIP.Format(_T("%s"), szIPName);
+					strLog.Append(strIP);
 				}
 				WriteLog(strLog);
 			}
 			else
 			{
-				strLog.Format("Cmd: 0x%x, DataSize: %d Bytes", usCmd, usSize);
+				strLog.Format(_T("Cmd: 0x%x, DataSize: %d Bytes"), usCmd, usSize);
 				WriteLog(strLog);
 			}
 		}
@@ -804,7 +1174,8 @@ void CEMC6_ServerDlg::CloseServer()
 	{
 		closesocket(m_sock_server);
 		m_sock_server = INVALID_SOCKET;
-		WriteLog("Server: closed");
+		CString strLog = _T("Server: closed");
+		WriteLog(strLog);
 	}
 	
 	if(m_bWSA)
