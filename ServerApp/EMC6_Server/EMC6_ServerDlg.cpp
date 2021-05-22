@@ -1393,351 +1393,639 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_SET_XY_SWAP:
 		{
-
+			strLog = "SET_XY_SWAP";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_XYZ_REVERSE:
 		{
-
+			strLog = "SET_XYZ_REVERSE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_INDEX_DELAY:
 		{
-
+			strLog = "SET_MOTION_INDEX_DELAY";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_SOFT_LIMIT:
 		{
-
+			strLog = "SET_MOTION_SOFT_LIMIT";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ENCODER_PARAM:
 		{
-
+			long Axis, Inverse;
+			double dlScale;
+			
+			Axis = *(long *)&g_ReadBuffer[6];
+			Inverse = *(long *)&g_ReadBuffer[10];
+			dlScale = *(double *)&g_ReadBuffer[14];
+			strLog.Format(_T("SET_ENCODER_PARAM,%d,%d,%.3f;"), Axis, Inverse, dlScale);
+			break;
 		}
 		case CMD_ENABLE_3D_MULTI_COR:
 		{
-
+			strLog = "ENABLE_3D_MULTI_COR";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_Z_COMP_TABLE:
 		{
-
+			strLog.Format(_T("SET_Z_COMP_TABLE,%dBytes;"), usSize);
+			break;
 		}
 		case CMD_SET_ENCODER_POS_TRIGGER:
 		{
-
+			strLog = "SET_ENCODER_POS_TRIGGER";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_GANTRY:
 		{
-
+			strLog = "SET_MOTION_GANTRY";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_IO:
 		{
-
+			strLog = "SET_MOTION_IO";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_POS_ERR:
 		{
-
+			strLog = "SET_MOTION_POS_ERR";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_MOTION_SERVO_ON:
 		{
-
+			strLog = "MOTION_SERVO_ON";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_SCAN_PSO:
 		{
-
+			strLog = "SET_SCAN_PSO";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ETAB_INTERVAL:
 		{
-
+			strLog = "SET_ETAB_INTERVAL";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_PSO_FILTER:
 		{
-
+			strLog = "SET_PSO_FILTER";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_PSO_PWM2:
 		{
-
+			strLog = "SET_PSO_PWM2";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_PSO_LASER_MODE:
 		{
-
+			strLog = "SET_PSO_LASER_MODE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ETAB_TRG_IN:
 		{
-
+			strLog = "SET_ETAB_TRG_IN";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ETAB_OUT:
 		{
-
+			strLog = "SET_ETAB_OUT";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ENCODER_FLY_REF_MODE:
 		{
-
+			strLog = "SET_ENCODER_FLY_REF_MODE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_SCAN_PARAMS:
 		{
-
+			long lRefMode, lOffsetX, lOffsetY;
+			double dRateX, dRateY;
+			unsigned short usPtr = 0;
+			
+			lRefMode = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lOffsetX = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lOffsetY = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dRateX = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			dRateY = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("SET_MOTION_SCAN_PARAMS,%d,%d,%d,%.3f,%.3f;"), lRefMode, lOffsetX, lOffsetY, dRateX, dRateY);
+			break;
 		}
 		case CMD_SET_DOTLINE_PARAMS:
 		{
-
+			strLog = "SET_DOTLINE_PARAMS";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_3D_Z_SCALE:
 		{
-
+			strLog = "SET_3D_Z_SCALE";
+			bRead_double = TRUE;
+			break;
 		}
 		case CMD_SET_SCAN_PSO_DIRECT:
 		{
-
+			strLog = "SET_SCAN_PSO_DIRECT";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_MOTION_ARC_CLR_EX:
 		{
-
+			strLog = "MOTION_ARC_CLR_EX";
+			break;
 		}
 		case CMD_MOTION_ARC_START_EX:
 		{
-
+			strLog = "MOTION_ARC_START_EX";
+			break;
 		}
 		case CMD_MOTION_ARC_ADD_EX:
 		{
-
+			strLog = "MOTION_ARC_ADD_EX";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ETAB_PREVIEW_MODE:
 		{
-
+			long lEnable;
+			double dSpeed;
+			unsigned short usPtr = 0;
+			
+			lEnable = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dSpeed = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("SET_ETAB_PREVIEW_MODE,%d,%.3f;"), lEnable, dSpeed);
+			break;
 		}
 		case CMD_SET_NG_KEEP_DISTANCE:
 		{
-
+			strLog = "SET_NG_KEEP_DISTANCE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_IPG_POWER_SETTING:
 		{
-
+			strLog = "SET_IPG_POWER_SETTING";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_NG_DISABLE_DISTANCE:
 		{
-
+			strLog = "SET_NG_DISABLE_DISTANCE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_DISABLE_STOP:
 		{
-
+			strLog = "DISABLE_STOP";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_LOAD_POWER_COR_FILE:
 		{
-
+			strLog = "LOAD_POWER_COR_FILE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_POWER_COR_PARAMS:
 		{
-
+			strLog = "SET_POWER_COR_PARAMS";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_DIGITAL_POWER_OUT:
 		{
-
+			strLog = "SET_DIGITAL_POWER_OUT";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_POWER:
 		{
-
+			strLog = "SET_POWER";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MAXMIN_POWER_VALUE:
 		{
-
+			strLog = "SET_MAXMIN_POWER_VALUE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ETAB_SPEED_POWER_CONTROL:
 		{
-
+			long lMode, lMaxPower, lMinPower;
+			double dMaxSpeed, dMinSpeed, dCutOffSpeed;
+			unsigned short usPtr = 0;
+			
+			lMode = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lMaxPower = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lMinPower = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dMaxSpeed = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			dMinSpeed = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			dCutOffSpeed = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("SET_ETAB_SPEED_POWER_CONTROL,%d,%d,%d,%.3f,%.3f,%.3f;"), lMode, lMaxPower, lMinPower, dMaxSpeed, dMinSpeed, dCutOffSpeed);
+			break;
 		}
 		case CMD_SET_SCAN_FEEDBACK_MODE:
 		{
-
+			strLog = "SET_SCAN_FEEDBACK_MODE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_PSO_MODE:
 		{
-
+			strLog = "SET_PSO_MODE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_EXT_COR_TABLE:
 		{
-
+			strLog = "SET_EXT_COR_TABLE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_NG_RESET_POINT:
 		{
-
+			strLog = "SET_NG_RESET_POINT";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ETAB_ENCODER_DIRECTION:
 		{
-
+			strLog = "SET_ETAB_ENCODER_DIRECTION";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_SCAN_FB_COMP:
 		{
-
+			strLog = "SET_MOTION_SCAN_FB_COMP";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_SCAN_FB_COMP_DATA:
 		{
-
+			strLog = "SET_MOTION_SCAN_FB_COMP_DATA";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_NG_JUMP_CONDITION:
 		{
-
+			strLog = "SET_NG_JUMP_CONDITION";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MULTI_PATH_WOBBEL_PARAM:
 		{
-
+			strLog = "SET_MULTI_PATH_WOBBEL_PARAM";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_LOAD_MULTI_PATH_WOBBEL_SEGMENT:
 		{
-
+			strLog = "LOAD_MULTI_PATH_WOBBEL_SEGMENT";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_AMOF_PREDICTION_TIME:
 		{
-
+			strLog = "SET_AMOF_PREDICTION_TIME";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_NG2_PARAMS:
 		{
-
+			strLog = "SET_NG2_PARAMS";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ETAB_SPEED_FREQ_CONTROL:
 		{
-
+			long lMode, lMaxFreq, lMinFreq;
+			double dMaxSpeed, dMinSpeed;
+			unsigned short usPtr = 0;
+			
+			lMode = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lMaxFreq = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lMinFreq = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dMaxSpeed = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			dMinSpeed = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("SET_ETAB_SPEED_FREQ_CONTROL,%d,%d,%d,%.3f,%.3f;"), lMode, lMaxFreq, lMinFreq, dMaxSpeed, dMinSpeed);
+			break;
 		}
 		case CMD_SET_LASER_SIGNAL_LAG:
 		{
-
+			strLog = "SET_LASER_SIGNAL_LAG";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ENCODER_JUMP_UPDATE:
 		{
-
+			strLog = "SET_ENCODER_JUMP_UPDATE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_SCAN_CTRL_MODE:
 		{
-
+			strLog = "SET_SCAN_CTRL_MODE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_WOBBEL_EX:
 		{
-
+			long amplitude;
+			float theta;
+			long minamp;
+			double dAmpInc;
+			unsigned short usPtr = 0;
+			
+			amplitude = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			theta = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			minamp = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dAmpInc = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("SET_WOBBEL_EX,%d,%.3f,%d,%.3f;"), amplitude, theta, minamp, dAmpInc);
+			break;
 		}
 		case CMD_SET_IPG_PD_CFG:
 		{
-
+			strLog = "SET_IPG_PD_CFG";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_IPG_PD_CMD:
 		{
-
+			strLog = "SET_IPG_PD_CMD";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_LASER_SHIFT:
 		{
-
+			strLog = "SET_LASER_SHIFT";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_INT_FREQ_ALIGN_PARAMS:
 		{
-
+			strLog = "SET_INT_FREQ_ALIGN_PARAMS";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_GOTO_SPEED:
 		{
-
+			strLog = "SET_GOTO_SPEED";
+			bRead_double = TRUE;
+			break;
 		}
 		case CMD_ENABLE_IPG_POWER_MODE:
 		{
-
+			strLog = "ENABLE_IPG_POWER_MODE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_IPG_DIGITAL_POWER:
 		{
-
+			strLog = "SET_IPG_DIGITAL_POWER";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_CUT_SCAN_RATE:
 		{
-
+			double dRate[3];
+			long lOffset[3];
+			unsigned short usPtr = 0;
+			
+			dRate[0] = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			dRate[1] = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			dRate[2] = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			lOffset[0] = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lOffset[1] = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lOffset[2] = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			strLog.Format(_T("SET_CUT_SCAN_RATE,%.3f,%.3f,%.3f,%d,%d,%d;"), dRate[0], dRate[1], dRate[2], lOffset[0], lOffset[1], lOffset[2]);
+			break;
 		}
 		case CMD_SET_ENCODER_MOTION:
 		{
-
+			strLog = "SET_ENCODER_MOTION";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_MODEL_ENABLE:
 		{
+			long lMode;
+			double dPredictionTime;
+			unsigned short usPtr = 0;
 
+			lMode = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dPredictionTime = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("SET_MOTION_MODEL_ENABLE,%d,%.3f;"), lMode, dPredictionTime);
+			break;
 		}
 		case CMD_SET_MOTION_MODEL_PARAMS:
 		{
+			long lAxis, lIndex;
+			double dParamA, dParamB;
+			unsigned short usPtr = 0;
 
+			lAxis = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lIndex = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dParamA = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			dParamB = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("SET_MOTION_MODEL_PARAMS,%d,%d,%.3f,%.3f;"), lAxis, lIndex, dParamA, dParamB);
+			break;
 		}
 		case CMD_SET_SCAN_CTRL_LASERON_KEEP:
 		{
-
+			strLog = "SET_SCAN_CTRL_LASERON_KEEP";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_SPEED_POWER_PARAMS:
 		{
-
+			strLog = "SET_MOTION_SPEED_POWER_PARAMS";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_LASER_SIGNAL_DELAY:
 		{
-
+			strLog = "SET_LASER_SIGNAL_DELAY";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_ROUTE_PARAMS:
 		{
+			long lPulseScale, AccMode, StopAcc;
+			double dMaxAcc;
+			unsigned short usPtr = 0;
 
+			lPulseScale = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			AccMode = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			StopAcc = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dMaxAcc = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("SET_MOTION_ROUTE_PARAMS,%d,%d,%d,%.3f;"), lPulseScale, AccMode, StopAcc, dMaxAcc);
+			break;
 		}
 		case CMD_SET_MOTION_PSO_MODE:
 		{
-
+			strLog = "SET_MOTION_PSO_MODE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ROT_CENTER:
 		{
-
+			strLog = "SET_ROT_CENTER";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_ENCODER:
 		{
-
+			strLog = "SET_MOTION_ENCODER";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ECM_SK_CONFIG:
 		{
-
+			strLog = "SET_ECM_SK_CONFIG";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_ECM_SK_DATA:
 		{
-
+			strLog.Format(_T("SET_ECM_SK_DATA,%dBytes;"), usSize);
+			break;
 		}
 		case CMD_SET_ECM_SK_DATA_EX:
 		{
-
+			strLog.Format(_T("SET_ECM_SK_DATA_EX,%dBytes;"), usSize);
+			break;
 		}
 		case CMD_SET_MOTION_COMP_PARAMS:
 		{
-
+			strLog = "SET_MOTION_COMP_PARAMS";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_COMP_DATA:
 		{
-
+			strLog = "SET_MOTION_COMP_DATA";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_MOTION_ROUTE_AXIS_MAP:
 		{
-
+			strLog = "SET_MOTION_ROUTE_AXIS_MAP";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_WAIT_ENCODER_TRG_PARAM:
 		{
-
+			strLog = "SET_WAIT_ENCODER_TRG_PARAM";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_EXEC_LIST_JUMP_POS:
 		{
-
+			strLog = "SET_EXEC_LIST_JUMP_POS";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_LASER_SHIFT_TIME:
 		{
-
+			strLog = "SET_LASER_SHIFT_TIME";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_AMOF_AXIS_MAP:
 		{
-
+			strLog = "SET_AMOF_AXIS_MAP";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_SCAN_MODEL_MODE:
 		{
-
+			strLog = "SET_SCAN_MODEL_MODE";
+			bRead_long = TRUE;
+			break;
 		}
 		case CMD_SET_SCAN_ACC_MODEL_PARAMS:
 		{
+			long lAxis;
+			double dAcc;
+			double dToleErr;
+			unsigned short usPtr = 0;
 
+			lAxis = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dAcc = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			dToleErr = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("SET_SCAN_ACC_MODEL_PARAMS,%d,%.3f,%.3f;"), lAxis, dAcc, dToleErr);
+			break;
 		}
 		case CMD_RING_BUFFER_COUNT_ADD:
 		{
-
+			strLog = "RING_BUFFER_COUNT_ADD";
+			break;
 		}
 		case CMD_SET_PWM_BURST_PARAMS:
 		{
-
+			strLog = "SET_PWM_BURST_PARAMS";
+			bRead_long = TRUE;
+			break;
 		}
 		// case CMD_LIST_JUMP_TO:
 		// {
