@@ -119,8 +119,9 @@ int CmdTransfer(SOCKET sd_connect)
 	unsigned short usDataSize = 0;
 	long lData[32];
 	BOOL bSendRet, bReplyNull;
-	BOOL bRead_short, bRead_long, bRead_ulong, bRead_double;
-	CString strLog, strTmp;
+	BOOL bRead_short, bRead_long, bRead_ulong, bRead_double, bRead_MultiTypes;
+	BOOL bCmdLogEnable;
+	CString strLog, strTmp, strCmd, strRead;
 	unsigned short usSN, usCmd, usSize;
 
 	memset(lData, 0, sizeof(lData));
@@ -130,6 +131,8 @@ int CmdTransfer(SOCKET sd_connect)
 	{
 		bSendRet = TRUE;
 		bReplyNull = TRUE;
+		bCmdLogEnable = TRUE;
+		bRead_MultiTypes = FALSE;
 		bRead_short = FALSE;
 		bRead_long = FALSE;
 		bRead_ulong = FALSE;
@@ -141,7 +144,7 @@ int CmdTransfer(SOCKET sd_connect)
 		{
 		case CMD_GET_LIST_SIZE:
 		{
-			strLog = "GET_LIST_SIZE;";
+			strCmd = "GET_LIST_SIZE";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -150,12 +153,12 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_RS232_TEST:
 		{
-			strLog = "RS232_TEST;";
+			strCmd = "RS232_TEST";
 			break;
 		}
 		case CMD_GET_LABEL:
 		{
-			strLog = "GET_LABEL;";
+			strCmd = "GET_LABEL";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -164,7 +167,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_COUNT:
 		{
-			strLog = "GET_COUNT;";
+			strCmd = "GET_COUNT";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -173,7 +176,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_HEAD_STATUS:
 		{
-			strLog = "GET_HEAD_STATUS;";
+			strCmd = "GET_HEAD_STATUS";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -182,7 +185,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_HEX_VERSION:
 		{
-			strLog = "GET_HEX_VERSION;";
+			strCmd = "GET_HEX_VERSION";
 			usDataSize = 4;
 			lData[0] = 0x00010101;
 			strTmp.Format(_T("0x%x"), lData[0]);
@@ -191,7 +194,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_HI_DATA:
 		{
-			strLog = "GET_HI_DATA;";
+			strCmd = "GET_HI_DATA";
 			usDataSize = 16;
 			lData[0] = 0;
 			lData[1] = 0;
@@ -203,7 +206,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_INPUT_POINTER:
 		{
-			strLog = "GET_INPUT_POINTER;";
+			strCmd = "GET_INPUT_POINTER";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -212,7 +215,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_IO_STATUS:
 		{
-			strLog = "GET_IO_STATUS;";
+			strCmd = "GET_IO_STATUS";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -221,7 +224,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_LIST_SPACE:
 		{
-			strLog = "GET_LIST_SPACE;";
+			strCmd = "GET_LIST_SPACE";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -230,7 +233,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_CARD_VERSION:
 		{
-			strLog = "GET_CARD_VERSION;";
+			strCmd = "GET_CARD_VERSION";
 			usDataSize = 4;
 			lData[0] = 0x00030500;
 			strTmp.Format(_T("0x%x"), lData[0]);
@@ -239,7 +242,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_SERIAL_NUMBER:
 		{
-			strLog = "GET_SERIAL_NUMBER;";
+			strCmd = "GET_SERIAL_NUMBER";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -248,7 +251,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_STARTSTOP_INFO:
 		{
-			strLog = "GET_STARTSTOP_INFO;";
+			strCmd = "GET_STARTSTOP_INFO";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -257,7 +260,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_STATUS:
 		{
-			strLog = "GET_STATUS;";
+			strCmd = "GET_STATUS";
 			usDataSize = 8;
 			lData[0] = 0;
 			lData[1] = 0;
@@ -267,7 +270,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_TIME:
 		{
-			strLog = "GET_TIME;";
+			strCmd = "GET_TIME";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -276,7 +279,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_VALUE:
 		{
-			strLog = "GET_VALUE;";
+			strCmd = "GET_VALUE";
 			usDataSize = 8;
 			lData[0] = 0;
 			lData[1] = 0;
@@ -286,7 +289,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_WAIT_STATUS:
 		{
-			strLog = "GET_WAIT_STATUS;";
+			strCmd = "GET_WAIT_STATUS";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -295,12 +298,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_WAVEFORM:
 		{
-			unsigned long channel, stop;
-
-			channel = *((unsigned long *)&g_ReadBuffer[6]);
-			stop = *((unsigned long *)&g_ReadBuffer[10]);
-
-			strLog.Format(_T("GET_WAIT_STATUS,%d,%d;"), channel, stop);
+			strCmd = "GET_WAIT_STATUS";
+			bRead_ulong = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -309,7 +308,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_XY_POS:
 		{
-			strLog = "GET_XY_POS;";
+			strCmd = "GET_XY_POS";
 			usDataSize = 12;
 			lData[0] = 0;
 			lData[1] = 0;
@@ -320,7 +319,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_MEASUREMENT_STATUS:
 		{
-			strLog = "MEASUREMENT_STATUS;";
+			strCmd = "MEASUREMENT_STATUS";
 			usDataSize = 8;
 			lData[0] = 0;
 			lData[1] = 0;
@@ -330,7 +329,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_READ_IO_PORT:
 		{
-			strLog = "READ_IO_PORT;";
+			strCmd = "READ_IO_PORT";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -339,11 +338,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_READ_PIXEL_AD:
 		{
-			unsigned long pos;
-
-			pos = *((unsigned long *)&g_ReadBuffer[6]);
-
-			strLog.Format(_T("READ_PIXEL_AD,%d;"), pos);
+			strCmd = "READ_PIXEL_AD";
+			bRead_ulong = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -352,7 +348,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_READ_STATUS:
 		{
-			strLog = "READ_STATUS;";
+			strCmd = "READ_STATUS";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -361,11 +357,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_MOTION_PULSE_COUNT:
 		{
-			long lAxis;
-
-			lAxis = *((unsigned long *)&g_ReadBuffer[6]);
-
-			strLog.Format(_T("GET_MOTION_PULSE_COUNT,%d;"), lAxis);
+			strCmd = "GET_MOTION_PULSE_COUNT";
+			bRead_long = TRUE;
 			usDataSize = 4;
 			lData[0] = 250;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -374,11 +367,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_MOTION_INPOS:
 		{
-			long lAxis;
-
-			lAxis = *((unsigned long *)&g_ReadBuffer[6]);
-
-			strLog.Format(_T("GET_MOTION_INPOS,%d;"), lAxis);
+			strCmd = "GET_MOTION_INPOS";
+			bRead_long = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -387,11 +377,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_MOTION_STATUS:
 		{
-			long lAxis;
-
-			lAxis = *((unsigned long *)&g_ReadBuffer[6]);
-
-			strLog.Format(_T("GET_MOTION_STATUS,%d;"), lAxis);
+			strCmd = "GET_MOTION_STATUS";
+			bRead_long = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -400,11 +387,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_MOTION_ENCODER:
 		{
-			long lAxis;
-
-			lAxis = *((unsigned long *)&g_ReadBuffer[6]);
-
-			strLog.Format(_T("GET_MOTION_ENCODER,%d;"), lAxis);
+			strCmd = "GET_MOTION_ENCODER";
+			bRead_long = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -413,11 +397,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_MOTION_SENSOR:
 		{
-			long lAxis;
-
-			lAxis = *((unsigned long *)&g_ReadBuffer[6]);
-
-			strLog.Format(_T("GET_MOTION_SENSOR,%d;"), lAxis);
+			strCmd = "GET_MOTION_SENSOR";
+			bRead_long = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -426,7 +407,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_DEBUG_WATCH_DOG:
 		{
-			strLog = "DEBUG_WATCH_DOG;";
+			strCmd = "DEBUG_WATCH_DOG";
 			usDataSize = 24;
 			lData[0] = 0;
 			lData[1] = 0;
@@ -440,7 +421,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_MOTION_ARC_GET_SIZE:
 		{
-			strLog = "MOTION_ARC_GET_SIZE;";
+			strCmd = "MOTION_ARC_GET_SIZE";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -449,7 +430,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_IO_STATUS_EX:
 		{
-			strLog = "GET_IO_STATUS_EX;";
+			strCmd = "GET_IO_STATUS_EX";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -458,12 +439,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_AUTO_CAL:
 		{
-			unsigned long ulData[2];
-
-			ulData[0] = *((unsigned long *)&g_ReadBuffer[6]);
-			ulData[1] = *((unsigned long *)&g_ReadBuffer[10]);
-
-			strLog.Format(_T("AUTO_CAL,%d,%d;"), ulData[0], ulData[1]);
+			strCmd = "AUTO_CAL";
+			bRead_ulong = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -472,18 +449,13 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_CONTROL_COMMAND:
 		{
-			unsigned long ulData[3];
-
-			ulData[0] = *((unsigned long *)&g_ReadBuffer[6]);
-			ulData[1] = *((unsigned long *)&g_ReadBuffer[10]);
-			ulData[2] = *((unsigned long *)&g_ReadBuffer[14]);
-
-			strLog.Format(_T("CONTROL_COMMAND,%d,%d,%d;"), ulData[0], ulData[1], ulData[2]);
+			strCmd = "CONTROL_COMMAND";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_GET_ENCODER_SPEED:
 		{
-			strLog = "GET_ENCODER_SPEED;";
+			strCmd = "GET_ENCODER_SPEED";
 			usDataSize = 8;
 			lData[0] = 0;
 			lData[1] = 0;
@@ -493,11 +465,10 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_SET_HW_CFG:
 		{
-			unsigned short iByteCnt;
-
-			iByteCnt = *((unsigned short *)&g_ReadBuffer[6]);
-
-			strLog.Format(_T("SET_HW_CFG,%d;"), iByteCnt);
+			unsigned short iByteCnt = *((unsigned short *)&g_ReadBuffer[6]);
+			strCmd = "SET_HW_CFG";
+			strLog.Format(_T("%s,%dBytes"), strCmd, iByteCnt);
+			bRead_MultiTypes = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -506,12 +477,9 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_HW_CFG:
 		{
-			unsigned long iIndex, iByteCnt;
-
-			iIndex = *((unsigned long *)&g_ReadBuffer[6]);
-			iByteCnt = *((unsigned long *)&g_ReadBuffer[10]);
-
-			strLog.Format(_T("GET_HW_CFG,%d,%d;"), iIndex, iByteCnt);
+			strCmd = "GET_HW_CFG";
+			bRead_ulong = TRUE;
+			unsigned long iByteCnt = *((unsigned long *)&g_ReadBuffer[10]);
 			usDataSize = (unsigned short)iByteCnt;
 			if(iByteCnt > 0 && iByteCnt <= 128)
 			{
@@ -522,12 +490,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_ERASE_FLASH:
 		{
-			unsigned long iMode, ulAddr;
-
-			iMode = *((unsigned long *)&g_ReadBuffer[6]);
-			ulAddr = *((unsigned long *)&g_ReadBuffer[10]);
-
-			strLog.Format(_T("ERASE_FLASH,%d,%d;"), iMode, ulAddr);
+			strCmd = "ERASE_FLASH";
+			bRead_ulong = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -536,12 +500,9 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_READ_MEM:
 		{
-			unsigned long iSize, ulOffset;
-
-			iSize = *((unsigned long *)&g_ReadBuffer[6]);
-			ulOffset = *((unsigned long *)&g_ReadBuffer[10]);
-
-			strLog.Format(_T("READ_MEM,%d,%d;"), iSize, ulOffset);
+			strCmd = "READ_MEM";
+			bRead_ulong = TRUE;
+			unsigned long iSize = *((unsigned long *)&g_ReadBuffer[6]);
 			usDataSize = (unsigned short)iSize;
 			strTmp.Format(_T("0,%dBytes"), iSize);
 			bReplyNull = FALSE;
@@ -549,12 +510,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_MEM_TO_QSPI:
 		{
-			unsigned long Addr, Size;
-
-			Addr = *((unsigned long *)&g_ReadBuffer[6]);
-			Size = *((unsigned long *)&g_ReadBuffer[10]);
-
-			strLog.Format(_T("MEM_TO_QSPI,%d,%d;"), Addr, Size);
+			strCmd = "MEM_TO_QSPI";
+			bRead_ulong = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -563,12 +520,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_QSPI_TO_MEM:
 		{
-			unsigned long Addr, Size;
-
-			Addr = *((unsigned long *)&g_ReadBuffer[6]);
-			Size = *((unsigned long *)&g_ReadBuffer[10]);
-
-			strLog.Format(_T("QSPI_TO_MEM,%d,%d;"), Addr, Size);
+			strCmd = "QSPI_TO_MEM";
+			bRead_ulong = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -577,7 +530,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_SHA204_WAKEUP:
 		{
-			strLog = "SHA204_WAKEUP;";
+			strCmd = "SHA204_WAKEUP";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -586,7 +539,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_SHA204_SLEEP:
 		{
-			strLog = "SHA204_SLEEP;";
+			strCmd = "SHA204_SLEEP";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -595,7 +548,9 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_SHA204_EXECUTE_CMD:
 		{
-			strLog.Format(_T("SHA204_EXECUTE_CMD,%dBytes;"), usSize);
+			strCmd = "SHA204_EXECUTE_CMD";
+			strLog.Format(_T("%s,%dBytes"), strCmd, usSize);
+			bRead_MultiTypes = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -604,7 +559,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_SHA204_GET_RESPONSE:
 		{
-			strLog = "SHA204_GET_RESPONSE;";
+			strCmd = "SHA204_GET_RESPONSE";
 			usDataSize = 40;
 			strTmp.Format(_T("0,%dBytes"), usDataSize);
 			bReplyNull = FALSE;
@@ -612,7 +567,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_MOTION_INDEX_STATUS:
 		{
-			strLog = "GET_MOTION_INDEX_STATUS;";
+			strCmd = "GET_MOTION_INDEX_STATUS";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -621,7 +576,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_CORRECT_GRID:
 		{
-			strLog = "GET_CORRECT_GRID;";
+			strCmd = "GET_CORRECT_GRID";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -630,7 +585,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_DNA_CODE:
 		{
-			strLog = "GET_DNA_CODE;";
+			strCmd = "GET_DNA_CODE";
 			usDataSize = 8;
 			lData[0] = 0;
 			lData[1] = 0;
@@ -640,7 +595,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_SET_DNA_CODE:
 		{
-			strLog = "SET_DNA_CODE;";
+			strCmd = "SET_DNA_CODE";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -649,7 +604,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_ENCODER_POS_TRIGGER:
 		{
-			strLog = "GET_ENCODER_POS_TRIGGER;";
+			strCmd = "GET_ENCODER_POS_TRIGGER";
 			usDataSize = 12;
 			lData[0] = 0;
 			lData[1] = 0;
@@ -660,11 +615,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_ETAB_TRG_ENCODER:
 		{
-			long lIndex;
-
-			lIndex = *((long *)&g_ReadBuffer[6]);
-
-			strLog.Format(_T("GET_ETAB_TRG_ENCODER,%d;"), lIndex);
+			strCmd = "GET_ETAB_TRG_ENCODER";
+			bRead_long = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -673,11 +625,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_ETAB_REC_ENCODER:
 		{
-			long lIndex;
-
-			lIndex = *((long *)&g_ReadBuffer[6]);
-
-			strLog.Format(_T("GET_ETAB_REC_ENCODER,%d;"), lIndex);
+			strCmd = "GET_ETAB_REC_ENCODER";
+			bRead_long = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -686,7 +635,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_SELECT_LIST:
 		{
-			strLog = "GET_SELECT_LIST;";
+			strCmd = "GET_SELECT_LIST";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -695,7 +644,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_MOTION_ARC_GET_SIZE_EX:
 		{
-			strLog = "MOTION_ARC_GET_SIZE_EX;";
+			strCmd = "MOTION_ARC_GET_SIZE_EX";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -704,11 +653,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_RECORD_MARK_TIME:
 		{
-			long lIndex;
-
-			lIndex = *((long *)&g_ReadBuffer[6]);
-
-			strLog.Format(_T("GET_RECORD_MARK_TIME,%d;"), lIndex);
+			strCmd = "GET_RECORD_MARK_TIME";
+			bRead_long = TRUE;
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -717,11 +663,8 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_RECORD_AMOF_DIFF:
 		{
-			long lSetInterval;
-
-			lSetInterval = *((long *)&g_ReadBuffer[6]);
-
-			strLog.Format(_T("GET_RECORD_AMOF_DIFF,%d;"), lSetInterval);
+			strCmd = "GET_RECORD_AMOF_DIFF";
+			bRead_long = TRUE;
 			usDataSize = 36;
 			strTmp.Format(_T("0,%dBytes"), usDataSize);
 			bReplyNull = FALSE;
@@ -729,7 +672,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_NG_RECORD:
 		{
-			strLog = "GET_NG_RECORD;";
+			strCmd = "GET_NG_RECORD";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -738,7 +681,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_IPG_PD_READ:
 		{
-			strLog = "GET_IPG_PD_READ;";
+			strCmd = "GET_IPG_PD_READ";
 			usDataSize = 4;
 			lData[0] = 0;
 			strTmp.Format(_T("%d"), lData[0]);
@@ -747,7 +690,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_GET_INT_FREQ_STATUS:
 		{
-			strLog = "GET_INT_FREQ_STATUS;";
+			strCmd = "GET_INT_FREQ_STATUS";
 			usDataSize = 12;
 			lData[0] = 0;
 			lData[1] = 0;
@@ -804,640 +747,525 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_AUTO_CHANGE:
 		{
-			long lList;
-
-			lList = *((long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("AUTO_CHANGE,%d;"), lList);
+			strCmd = "AUTO_CHANGE";
+			bRead_long = TRUE;
 			break;
 		}
 		case CMD_AUTO_CHANGE_POS:
 		{
-			unsigned long start;
-
-			start = *((unsigned long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("AUTO_CHANGE_POS,%d;"), start);
+			strCmd = "AUTO_CHANGE_POS";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_DISABLE_LASER:
 		{
-			strLog = "DISABLE_LASER;";
+			strCmd = "DISABLE_LASER";
 			break;
 		}
 		case CMD_ENABLE_LASER:
 		{
-			strLog = "ENABLE_LASER;";
+			strCmd = "ENABLE_LASER";
 			break;
 		}
 		case CMD_EXECUTE_AT_POINTER:
 		{
-			unsigned long pointer;
-
-			pointer = *((unsigned long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("EXECUTE_AT_POINTER,%d;"), pointer);
+			strCmd = "EXECUTE_AT_POINTER";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_GOTO_XY:
 		{
-			long xpos, ypos;
-
-			xpos = *((long *)&g_ReadBuffer[6]);
-			ypos = *((long *)&g_ReadBuffer[10]);
-			strLog.Format(_T("GOTO_XY,%d,%d;"), xpos, ypos);
+			strCmd = "GOTO_XY";
+			bRead_long = TRUE;
 			break;
 		}
 		case CMD_HOME_POSITION:
 		{
-			long xhome, yhome;
-
-			xhome = *((long *)&g_ReadBuffer[6]);
-			yhome = *((long *)&g_ReadBuffer[10]);
-			strLog.Format(_T("HOME_POSITION,%d,%d;"), xhome, yhome);
+			strCmd = "HOME_POSITION";
+			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LOAD_PROGRAM_FILE:
 		{
-			strLog = "LOAD_PROGRAM_FILE;";
+			strCmd = "LOAD_PROGRAM_FILE";
 			break;
 		}
 		case CMD_QUIT_LOOP:
 		{
-			strLog = "QUIT_LOOP;";
+			strCmd = "QUIT_LOOP";
 			break;
 		}
 		case CMD_RELEASE_WAIT:
 		{
-			strLog = "RELEASE_WAIT;";
+			strCmd = "RELEASE_WAIT";
 			break;
 		}
 		case CMD_RESTART_LIST:
 		{
-			strLog = "RESTART_LIST;";
+			strCmd = "RESTART_LIST";
 			break;
 		}
 		case CMD_SELECT_COR_TABLE:
 		{
-			unsigned long head_a, head_b;
-
-			head_a = *((unsigned long *)&g_ReadBuffer[6]);
-			head_b = *((unsigned long *)&g_ReadBuffer[10]);
-			strLog.Format(_T("SELECT_COR_TABLE,%d,%d;"), head_a, head_b);
+			strCmd = "SELECT_COR_TABLE";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SELECT_LIST:
 		{
-			unsigned long list;
-
-			list = *((unsigned long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("SELECT_LIST,%d;"), list);
+			strCmd = "SELECT_LIST";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SELECT_RTC:
 		{
-			strLog = "SELECT_RTC;";
+			strCmd = "SELECT_RTC";
 			break;
 		}
 		case CMD_SET_CONTROL_MODE:
 		{
-			unsigned long control_mode;
-
-			control_mode = *((unsigned long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("SET_CONTROL_MODE,%d;"), control_mode);
+			strCmd = "SET_CONTROL_MODE";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_DELAY_MODE:
 		{
-			unsigned long vapoly, directmove3d, edgelevel, MinJumpDelay, JumpLengthLimit;
-
-			vapoly = *((unsigned long *)&g_ReadBuffer[6]);
-			directmove3d = *((unsigned long *)&g_ReadBuffer[10]);
-			edgelevel = *((unsigned long *)&g_ReadBuffer[14]);
-			MinJumpDelay = *((unsigned long *)&g_ReadBuffer[18]);
-			JumpLengthLimit = *((unsigned long *)&g_ReadBuffer[22]);
-			strLog.Format(_T("SET_DELAY_MODE,%d,%d,%d,%d,%d;"), vapoly, directmove3d, edgelevel, MinJumpDelay, JumpLengthLimit);
+			strCmd = "SET_DELAY_MODE";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_INPUT_POINTER:
 		{
-			unsigned long pointer;
-
-			pointer = *((unsigned long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("SET_INPUT_POINTER,%d;"), pointer);
+			strCmd = "SET_INPUT_POINTER";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_LIST_MODE:
 		{
-			unsigned long mode;
-
-			mode = *((unsigned long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("SET_LIST_MODE,%d;"), mode);
+			strCmd = "SET_LIST_MODE";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_MAX_COUNT:
 		{
-			long max_count;
-
-			max_count = *((long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("SET_MAX_COUNT,%d;"), max_count);
+			strCmd = "SET_MAX_COUNT";
+			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_PISO_CONTROL:
 		{
-			unsigned long L1, L2;
-
-			L1 = *((unsigned long *)&g_ReadBuffer[6]);
-			L2 = *((unsigned long *)&g_ReadBuffer[10]);
-			strLog.Format(_T("SET_PISO_CONTROL,%d,%d;"), L1, L2);
+			strCmd = "SET_PISO_CONTROL";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_SOFTSTART_LEVEL:
 		{
-			unsigned long index, level;
-
-			index = *((unsigned long *)&g_ReadBuffer[6]);
-			level = *((unsigned long *)&g_ReadBuffer[10]);
-			strLog.Format(_T("SET_SOFTSTART_LEVEL,%d,%d;"), index, level);
+			strCmd = "SET_SOFTSTART_LEVEL";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SOFTSTART_MODE:
 		{
-			unsigned long mode, number, restartdelay;
-
-			mode = *((unsigned long *)&g_ReadBuffer[6]);
-			number = *((unsigned long *)&g_ReadBuffer[10]);
-			restartdelay = *((unsigned long *)&g_ReadBuffer[14]);
-			strLog.Format(_T("SOFTSTART_MODE,%d,%d,%d;"), mode, number, restartdelay);
+			strCmd = "SOFTSTART_MODE";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_START_LOOP:
 		{
-			long lListNum;
-
-			lListNum = *((long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("START_LOOP,%d;"), lListNum);
+			strCmd = "START_LOOP";
+			bRead_long = TRUE;
 			break;
 		}
 		case CMD_WRITE_8BIT_PORT:
 		{
-			unsigned long Bit, bOn;
-
-			Bit = *((unsigned long *)&g_ReadBuffer[6]);
-			bOn = *((unsigned long *)&g_ReadBuffer[10]);
-			strLog.Format(_T("WRITE_8BIT_PORT,%d,%d;"), Bit, bOn);
+			strCmd = "WRITE_8BIT_PORT";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_WRITE_DA_X:
 		{
-			unsigned long ulData[2];
-
-			ulData[0] = *((unsigned long *)&g_ReadBuffer[6]);
-			ulData[1] = *((unsigned long *)&g_ReadBuffer[10]);
-			strLog.Format(_T("WRITE_DA_X,%d,%d;"), ulData[0], ulData[1]);
+			strCmd = "WRITE_DA_X";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_WRITE_IO_PORT:
 		{
-			unsigned long value;
-
-			value = *((unsigned long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("WRITE_IO_PORT,%d;"), value);
+			strCmd = "WRITE_IO_PORT";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_Z_OUT:
 		{
-			long value;
-
-			value = *((long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("CMD_Z_OUT,%d;"), value);
+			strCmd = "CMD_Z_OUT";
+			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_FLYSPEED_UPDATE_TIME:
 		{
-			strLog = "SET_FLYSPEED_UPDATE_TIME;";
+			strCmd = "SET_FLYSPEED_UPDATE_TIME";
 			break;
 		}
 		case CMD_SET_PWM_VARPERIOD:
 		{
-			CString strData;
-			long lSize;
-			long lVarPeriod[10];
-
-			lSize = *((long *)&g_ReadBuffer[6]);
-			strLog = "SET_PWM_VARPERIOD";
-			for(int i = 0;i < lSize;i++)
-			{
-				lVarPeriod[i] = *((long *)&g_ReadBuffer[10 + 4*i]);
-				strData.Format(_T(",%d"), lVarPeriod[i]);
-				strLog.Append(strData);
-			}
-			strData = ";";
-			strLog.Append(strData);
+			strCmd = "SET_PWM_VARPERIOD";
+			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_STANDBY:
 		{
-			unsigned long half_period, pulse_width;
-
-			half_period = *((unsigned long *)&g_ReadBuffer[6]);
-			pulse_width = *((unsigned long *)&g_ReadBuffer[10]);
-			strLog.Format(_T("SET_STANDBY,%d,%d;"), half_period, pulse_width);
+			strCmd = "SET_STANDBY";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LASER_SIGNAL_ON:
 		{
-			unsigned long ulData;
-
-			ulData = *((unsigned long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("LASER_SIGNAL_ON,%d;"), ulData);
+			strCmd = "LASER_SIGNAL_ON";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_LASER_FPK:
 		{
-			unsigned long fpk, lead_time;
-
-			fpk = *((unsigned long *)&g_ReadBuffer[6]);
-			lead_time = *((unsigned long *)&g_ReadBuffer[10]);
-			strLog.Format(_T("SET_LASER_FPK,%d,%d;"), fpk, lead_time);
+			strCmd = "SET_LASER_FPK";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_LASER_MODE:
 		{
-			unsigned long mode;
-
-			mode = *((unsigned long *)&g_ReadBuffer[6]);
-			strLog.Format(_T("SET_LASER_MODE,%d;"), mode);
+			strCmd = "SET_LASER_MODE";
+			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_MATRIX:
 		{
-			double dData[4];
-			CString strData;
-
-			strLog = "SET_MATRIX";
-			for(int i = 0; i < 4; i++)
-			{
-				dData[i] = *((double *)&g_ReadBuffer[6 + sizeof(double)*i]);
-				strData.Format(_T(",%.3f"), dData[i]);
-				strLog.Append(strData);
-			}
-			strData = ";";
-			strLog.Append(strData);
+			strCmd = "SET_MATRIX";
+			bRead_double = TRUE;
 			break;
 		}
 		case CMD_SET_OFFSET:
 		{
-			long lReadData[2];
-			CString strData;
-
-			strLog = "SET_OFFSET";
-			for(int i = 0; i < sizeof(lReadData)/sizeof(lReadData[0]); i++)
-			{
-				lReadData[i] = *((long *)&g_ReadBuffer[6 + sizeof(long)*i]);
-				strData.Format(_T(",%d"), lReadData[i]);
-				strLog.Append(strData);
-			}
-			strData = ";";
-			strLog.Append(strData);
+			strCmd = "SET_OFFSET";
+			bRead_long = TRUE;
 			break;
 		}
 		case CMD_MOTION_MOVETO:
 		{
-			long lReadData[2];
-			CString strData;
-
-			strLog = "MOTION_MOVETO";
-			for(int i = 0; i < sizeof(lReadData)/sizeof(lReadData[0]); i++)
-			{
-				lReadData[i] = *((long *)&g_ReadBuffer[6 + sizeof(long)*i]);
-				strData.Format(_T(",%d"), lReadData[i]);
-				strLog.Append(strData);
-			}
-			strData = ";";
-			strLog.Append(strData);
+			strCmd = "MOTION_MOVETO";
+			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_PARAM1:
 		{
-			long lReadData[64];
-			CString strData;
-
-			strLog = "SET_MOTION_PARAM1";
-			for(int i = 0; i < usSize/4; i++)
-			{
-				lReadData[i] = *((long *)&g_ReadBuffer[6 + sizeof(long)*i]);
-				strData.Format(_T(",%d"), lReadData[i]);
-				strLog.Append(strData);
-			}
-			strData = ";";
-			strLog.Append(strData);
+			strCmd = "SET_MOTION_PARAM1";
+			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_PARAM2:
 		{
-			strLog = "SET_MOTION_PARAM2;";
+			strCmd = "SET_MOTION_PARAM2";
 			break;
 		}
 		case CMD_SET_MOTION_PARAM3:
 		{
-			strLog = "SET_MOTION_PARAM3;";
+			strCmd = "SET_MOTION_PARAM3";
 			break;
 		}
 		case CMD_SET_MOTION_XYTABLE:
 		{
-			strLog = "SET_MOTION_XYTABLE";
+			strCmd = "SET_MOTION_XYTABLE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_HOME:
 		{
-			strLog = "SET_MOTION_HOME";
+			strCmd = "SET_MOTION_HOME";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_FLY_X:
 		{
-			strLog = "SET_FLY_X";
+			strCmd = "SET_FLY_X";
 			bRead_double = TRUE;
 			break;
 		}
 		case CMD_SET_FLY_Y:
 		{
-			strLog = "SET_FLY_Y";
+			strCmd = "SET_FLY_Y";
 			bRead_double = TRUE;
 			break;
 		}
 		case CMD_SET_FLY_DELAY:
 		{
-			strLog = "SET_FLY_DELAY";
+			strCmd = "SET_FLY_DELAY";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_SIMULATE_ENCODER:
 		{
-			strLog = "SET_SIMULATE_ENCODER";
+			strCmd = "SET_SIMULATE_ENCODER";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_REBOOT:
 		{
-			strLog = "REBOOT;";
+			strCmd = "REBOOT";
 			break;
 		}
 		case CMD_JOGSTART:
 		{
-			strLog = "JOGSTART";
+			strCmd = "JOGSTART";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_JOGEND:
 		{
-			strLog = "JOGEND";
+			strCmd = "JOGEND";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_BACKSPACE:
 		{
-			strLog = "SET_MOTION_BACKSPACE";
+			strCmd = "SET_MOTION_BACKSPACE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_HOME_REAL:
 		{
-			strLog = "SET_MOTION_HOME_REAL";
+			strCmd = "SET_MOTION_HOME_REAL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_RESET_ENCODER:
 		{
-			strLog = "RESET_ENCODER";
+			strCmd = "RESET_ENCODER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_R05_CONFIG:
 		{
-			strLog = "R05_CONFIG";
+			strCmd = "R05_CONFIG";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_R05_LEVEL:
 		{
-			strLog = "R05_LEVEL";
+			strCmd = "R05_LEVEL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_WRITE_IO_PORT_EX:
 		{
-			strLog = "WRITE_IO_PORT_EX";
+			strCmd = "WRITE_IO_PORT_EX";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_DSP_START:
 		{
-			strLog = "DSP_START;";
+			strCmd = "DSP_START";
 			break;
 		}
 		case CMD_SET_PROGRAM_READY:
 		{
-			strLog = "SET_PROGRAM_READY";
+			strCmd = "SET_PROGRAM_READY";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_MARKING_READY:
 		{
-			strLog = "SET_MARKING_READY";
+			strCmd = "SET_MARKING_READY";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_MARKING_END:
 		{
-			strLog = "SET_MARKING_END";
+			strCmd = "SET_MARKING_END";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_MARKING_END_TIME:
 		{
-			strLog = "SET_MARKING_END_TIME";
+			strCmd = "SET_MARKING_END_TIME";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_RESET_PULSE_COUNT:
 		{
-			strLog = "RESET_PULSE_COUNT";
+			strCmd = "RESET_PULSE_COUNT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_LABEL:
 		{
-			strLog = "SET_LABEL";
+			strCmd = "SET_LABEL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_GOTO_XYZ:
 		{
-			strLog = "GOTO_XYZ";
+			strCmd = "GOTO_XYZ";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_ENCODER_MODE:
 		{
-			strLog = "SET_ENCODER_MODE";
+			strCmd = "SET_ENCODER_MODE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_ENCODER_COMP:
 		{
-			strLog = "SET_ENCODER_COMP";
+			strCmd = "SET_ENCODER_COMP";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_XY:
 		{
-			strLog = "SET_MOTION_XY";
+			strCmd = "SET_MOTION_XY";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_CARD_CONTROL_STATUS:
 		{
-			strLog = "SET_CARD_CONTROL_STATUS";
+			strCmd = "SET_CARD_CONTROL_STATUS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_FLY_PREVIEW_MODE:
 		{
-			strLog = "SET_FLY_PREVIEW_MODE";
+			strCmd = "SET_FLY_PREVIEW_MODE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_IO_STARTSTOP:
 		{
-			strLog = "SET_IO_STARTSTOP";
+			strCmd = "SET_IO_STARTSTOP";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_EXEC_LIST:
 		{
-			strLog = "EXEC_LIST";
+			strCmd = "EXEC_LIST";
 			bRead_short = TRUE;
 			break;
 		}
 		case CMD_STOP_LIST:
 		{
-			strLog = "STOP_LIST;";
+			strCmd = "STOP_LIST";
 			break;
 		}
 		case CMD_STOP_EXEC:
 		{
-			strLog = "STOP_EXEC;";
+			strCmd = "STOP_EXEC";
 			break;
 		}
 		case CMD_START_LIST:
 		{
-			strLog = "START_LIST";
+			strCmd = "START_LIST";
 			bRead_short = TRUE;
 			break;
 		}
 		case CMD_MOTION_ARC_AXIS:
 		{
-			strLog = "MOTION_ARC_AXIS";
+			strCmd = "MOTION_ARC_AXIS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_MOTION_ARC_LON_STEP:
 		{
-			strLog = "MOTION_ARC_LON_STEP";
+			strCmd = "MOTION_ARC_LON_STEP";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_MOTION_ARC_CLR:
 		{
-			strLog = "MOTION_ARC_CLR;";
+			strCmd = "MOTION_ARC_CLR";
 			break;
 		}
 		case CMD_MOTION_ARC_START:
 		{
-			strLog = "MOTION_ARC_START;";
+			strCmd = "MOTION_ARC_START";
 			break;
 		}
 		case CMD_MOTION_ARC_ADD:
 		{
-			strLog = "MOTION_ARC_ADD";
+			strCmd = "MOTION_ARC_ADD";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_ENCODER_MOTION:
 		{
-			strLog = "ENCODER_MOTION;";
+			strCmd = "ENCODER_MOTION";
 			break;
 		}
 		case CMD_SET_STARTSTOP_FILTER:
 		{
-			strLog = "SET_STARTSTOP_FILTER";
+			strCmd = "SET_STARTSTOP_FILTER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_IO_FILTER_LAG:
 		{
-			strLog = "SET_IO_FILTER_LAG";
+			strCmd = "SET_IO_FILTER_LAG";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SCAN_XY_ENABLE:
 		{
-			strLog = "SCAN_XY_ENABLE";
+			strCmd = "SCAN_XY_ENABLE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LOAD_CORRECTION_FILE:
 		{
-			strLog = "LOAD_CORRECTION_FILE";
+			strCmd = "LOAD_CORRECTION_FILE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LOAD_CORRECTION_FILE_3D:
 		{
-			strLog = "LOAD_CORRECTION_FILE_3D;";
+			strCmd = "LOAD_CORRECTION_FILE_3D";
 			break;
 		}
 		case CMD_LOAD_VARPOLYDELAY:
 		{
-			strLog = "LOAD_VARPOLYDELAY";
+			strCmd = "LOAD_VARPOLYDELAY";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_WRITE_MEM:
-		{
-			unsigned long ulOffset;
-			
-			ulOffset = *(unsigned long *)&g_ReadBuffer[6];
-			strLog.Format(_T("WRITE_MEM,%d,%dBytes;"), ulOffset, usSize-4);
+		{		
+			strCmd = "WRITE_MEM";
+			unsigned long ulOffset = *(unsigned long *)&g_ReadBuffer[6];
+			strLog.Format(_T("WRITE_MEM,%d,%dBytes"), ulOffset, usSize-4);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_LENS_TRANSFORM:
 		{
-			strLog = "SET_LENS_TRANSFORM";
+			strCmd = "SET_LENS_TRANSFORM";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_XY_SWAP:
 		{
-			strLog = "SET_XY_SWAP";
+			strCmd = "SET_XY_SWAP";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_XYZ_REVERSE:
 		{
-			strLog = "SET_XYZ_REVERSE";
+			strCmd = "SET_XYZ_REVERSE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_INDEX_DELAY:
 		{
-			strLog = "SET_MOTION_INDEX_DELAY";
+			strCmd = "SET_MOTION_INDEX_DELAY";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_SOFT_LIMIT:
 		{
-			strLog = "SET_MOTION_SOFT_LIMIT";
+			strCmd = "SET_MOTION_SOFT_LIMIT";
 			bRead_long = TRUE;
 			break;
 		}
@@ -1449,95 +1277,99 @@ int CmdTransfer(SOCKET sd_connect)
 			Axis = *(long *)&g_ReadBuffer[6];
 			Inverse = *(long *)&g_ReadBuffer[10];
 			dlScale = *(double *)&g_ReadBuffer[14];
-			strLog.Format(_T("SET_ENCODER_PARAM,%d,%d,%.3f;"), Axis, Inverse, dlScale);
+			strCmd = "SET_ENCODER_PARAM";
+			strLog.Format(_T("%s,%d,%d,%.3f"), strCmd, Axis, Inverse, dlScale);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_ENABLE_3D_MULTI_COR:
 		{
-			strLog = "ENABLE_3D_MULTI_COR";
+			strCmd = "ENABLE_3D_MULTI_COR";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_Z_COMP_TABLE:
 		{
-			strLog.Format(_T("SET_Z_COMP_TABLE,%dBytes;"), usSize);
+			strCmd = "SET_Z_COMP_TABLE";
+			strLog.Format(_T("%s,%dBytes"), strCmd, usSize);
+			bRead_MultiTypes =TRUE;
 			break;
 		}
 		case CMD_SET_ENCODER_POS_TRIGGER:
 		{
-			strLog = "SET_ENCODER_POS_TRIGGER";
+			strCmd = "SET_ENCODER_POS_TRIGGER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_GANTRY:
 		{
-			strLog = "SET_MOTION_GANTRY";
+			strCmd = "SET_MOTION_GANTRY";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_IO:
 		{
-			strLog = "SET_MOTION_IO";
+			strCmd = "SET_MOTION_IO";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_POS_ERR:
 		{
-			strLog = "SET_MOTION_POS_ERR";
+			strCmd = "SET_MOTION_POS_ERR";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_MOTION_SERVO_ON:
 		{
-			strLog = "MOTION_SERVO_ON";
+			strCmd = "MOTION_SERVO_ON";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_SCAN_PSO:
 		{
-			strLog = "SET_SCAN_PSO";
+			strCmd = "SET_SCAN_PSO";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_ETAB_INTERVAL:
 		{
-			strLog = "SET_ETAB_INTERVAL";
+			strCmd = "SET_ETAB_INTERVAL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_PSO_FILTER:
 		{
-			strLog = "SET_PSO_FILTER";
+			strCmd = "SET_PSO_FILTER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_PSO_PWM2:
 		{
-			strLog = "SET_PSO_PWM2";
+			strCmd = "SET_PSO_PWM2";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_PSO_LASER_MODE:
 		{
-			strLog = "SET_PSO_LASER_MODE";
+			strCmd = "SET_PSO_LASER_MODE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_ETAB_TRG_IN:
 		{
-			strLog = "SET_ETAB_TRG_IN";
+			strCmd = "SET_ETAB_TRG_IN";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_ETAB_OUT:
 		{
-			strLog = "SET_ETAB_OUT";
+			strCmd = "SET_ETAB_OUT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_ENCODER_FLY_REF_MODE:
 		{
-			strLog = "SET_ENCODER_FLY_REF_MODE";
+			strCmd = "SET_ENCODER_FLY_REF_MODE";
 			bRead_long = TRUE;
 			break;
 		}
@@ -1557,40 +1389,42 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(double);
 			dRateY = *(double *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(double);
-			strLog.Format(_T("SET_MOTION_SCAN_PARAMS,%d,%d,%d,%.3f,%.3f;"), lRefMode, lOffsetX, lOffsetY, dRateX, dRateY);
+			strCmd = "SET_MOTION_SCAN_PARAMS";
+			strLog.Format(_T("%s,%d,%d,%d,%.3f,%.3f"), strCmd, lRefMode, lOffsetX, lOffsetY, dRateX, dRateY);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_DOTLINE_PARAMS:
 		{
-			strLog = "SET_DOTLINE_PARAMS";
+			strCmd = "SET_DOTLINE_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_3D_Z_SCALE:
 		{
-			strLog = "SET_3D_Z_SCALE";
+			strCmd = "SET_3D_Z_SCALE";
 			bRead_double = TRUE;
 			break;
 		}
 		case CMD_SET_SCAN_PSO_DIRECT:
 		{
-			strLog = "SET_SCAN_PSO_DIRECT";
+			strCmd = "SET_SCAN_PSO_DIRECT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_MOTION_ARC_CLR_EX:
 		{
-			strLog = "MOTION_ARC_CLR_EX;";
+			strCmd = "MOTION_ARC_CLR_EX";
 			break;
 		}
 		case CMD_MOTION_ARC_START_EX:
 		{
-			strLog = "MOTION_ARC_START_EX;";
+			strCmd = "MOTION_ARC_START_EX";
 			break;
 		}
 		case CMD_MOTION_ARC_ADD_EX:
 		{
-			strLog = "MOTION_ARC_ADD_EX";
+			strCmd = "MOTION_ARC_ADD_EX";
 			bRead_long = TRUE;
 			break;
 		}
@@ -1604,60 +1438,62 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			dSpeed = *(double *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(double);
-			strLog.Format(_T("SET_ETAB_PREVIEW_MODE,%d,%.3f;"), lEnable, dSpeed);
+			strCmd = "SET_ETAB_PREVIEW_MODE";
+			strLog.Format(_T("%s,%d,%.3f"), strCmd, lEnable, dSpeed);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_NG_KEEP_DISTANCE:
 		{
-			strLog = "SET_NG_KEEP_DISTANCE";
+			strCmd = "SET_NG_KEEP_DISTANCE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_IPG_POWER_SETTING:
 		{
-			strLog = "SET_IPG_POWER_SETTING";
+			strCmd = "SET_IPG_POWER_SETTING";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_NG_DISABLE_DISTANCE:
 		{
-			strLog = "SET_NG_DISABLE_DISTANCE";
+			strCmd = "SET_NG_DISABLE_DISTANCE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_DISABLE_STOP:
 		{
-			strLog = "DISABLE_STOP";
+			strCmd = "DISABLE_STOP";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LOAD_POWER_COR_FILE:
 		{
-			strLog = "LOAD_POWER_COR_FILE";
+			strCmd = "LOAD_POWER_COR_FILE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_POWER_COR_PARAMS:
 		{
-			strLog = "SET_POWER_COR_PARAMS";
+			strCmd = "SET_POWER_COR_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_DIGITAL_POWER_OUT:
 		{
-			strLog = "SET_DIGITAL_POWER_OUT";
+			strCmd = "SET_DIGITAL_POWER_OUT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_POWER:
 		{
-			strLog = "SET_POWER";
+			strCmd = "SET_POWER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MAXMIN_POWER_VALUE:
 		{
-			strLog = "SET_MAXMIN_POWER_VALUE";
+			strCmd = "SET_MAXMIN_POWER_VALUE";
 			bRead_long = TRUE;
 			break;
 		}
@@ -1679,78 +1515,80 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(double);
 			dCutOffSpeed = *(double *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(double);
-			strLog.Format(_T("SET_ETAB_SPEED_POWER_CONTROL,%d,%d,%d,%.3f,%.3f,%.3f;"), lMode, lMaxPower, lMinPower, dMaxSpeed, dMinSpeed, dCutOffSpeed);
+			strCmd = "SET_ETAB_SPEED_POWER_CONTROL";
+			strLog.Format(_T("%s,%d,%d,%d,%.3f,%.3f,%.3f"), strCmd, lMode, lMaxPower, lMinPower, dMaxSpeed, dMinSpeed, dCutOffSpeed);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_SCAN_FEEDBACK_MODE:
 		{
-			strLog = "SET_SCAN_FEEDBACK_MODE";
+			strCmd = "SET_SCAN_FEEDBACK_MODE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_PSO_MODE:
 		{
-			strLog = "SET_PSO_MODE";
+			strCmd = "SET_PSO_MODE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_EXT_COR_TABLE:
 		{
-			strLog = "SET_EXT_COR_TABLE";
+			strCmd = "SET_EXT_COR_TABLE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_NG_RESET_POINT:
 		{
-			strLog = "SET_NG_RESET_POINT";
+			strCmd = "SET_NG_RESET_POINT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_ETAB_ENCODER_DIRECTION:
 		{
-			strLog = "SET_ETAB_ENCODER_DIRECTION";
+			strCmd = "SET_ETAB_ENCODER_DIRECTION";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_SCAN_FB_COMP:
 		{
-			strLog = "SET_MOTION_SCAN_FB_COMP";
+			strCmd = "SET_MOTION_SCAN_FB_COMP";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_SCAN_FB_COMP_DATA:
 		{
-			strLog = "SET_MOTION_SCAN_FB_COMP_DATA";
+			strCmd = "SET_MOTION_SCAN_FB_COMP_DATA";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_NG_JUMP_CONDITION:
 		{
-			strLog = "SET_NG_JUMP_CONDITION";
+			strCmd = "SET_NG_JUMP_CONDITION";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MULTI_PATH_WOBBEL_PARAM:
 		{
-			strLog = "SET_MULTI_PATH_WOBBEL_PARAM";
+			strCmd = "SET_MULTI_PATH_WOBBEL_PARAM";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LOAD_MULTI_PATH_WOBBEL_SEGMENT:
 		{
-			strLog = "LOAD_MULTI_PATH_WOBBEL_SEGMENT";
+			strCmd = "LOAD_MULTI_PATH_WOBBEL_SEGMENT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_AMOF_PREDICTION_TIME:
 		{
-			strLog = "SET_AMOF_PREDICTION_TIME";
+			strCmd = "SET_AMOF_PREDICTION_TIME";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_NG2_PARAMS:
 		{
-			strLog = "SET_NG2_PARAMS";
+			strCmd = "SET_NG2_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
@@ -1770,24 +1608,26 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(double);
 			dMinSpeed = *(double *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(double);
-			strLog.Format(_T("SET_ETAB_SPEED_FREQ_CONTROL,%d,%d,%d,%.3f,%.3f;"), lMode, lMaxFreq, lMinFreq, dMaxSpeed, dMinSpeed);
+			strCmd = "SET_ETAB_SPEED_FREQ_CONTROL";
+			strLog.Format(_T("%s,%d,%d,%d,%.3f,%.3f"), strCmd, lMode, lMaxFreq, lMinFreq, dMaxSpeed, dMinSpeed);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_LASER_SIGNAL_LAG:
 		{
-			strLog = "SET_LASER_SIGNAL_LAG";
+			strCmd = "SET_LASER_SIGNAL_LAG";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_ENCODER_JUMP_UPDATE:
 		{
-			strLog = "SET_ENCODER_JUMP_UPDATE";
+			strCmd = "SET_ENCODER_JUMP_UPDATE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_SCAN_CTRL_MODE:
 		{
-			strLog = "SET_SCAN_CTRL_MODE";
+			strCmd = "SET_SCAN_CTRL_MODE";
 			bRead_long = TRUE;
 			break;
 		}
@@ -1807,48 +1647,50 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			dAmpInc = *(double *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(double);
-			strLog.Format(_T("SET_WOBBEL_EX,%d,%.3f,%d,%.3f;"), amplitude, theta, minamp, dAmpInc);
+			strCmd = "SET_WOBBEL_EX";
+			strLog.Format(_T("%s,%d,%.3f,%d,%.3f"), strCmd, amplitude, theta, minamp, dAmpInc);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_IPG_PD_CFG:
 		{
-			strLog = "SET_IPG_PD_CFG";
+			strCmd = "SET_IPG_PD_CFG";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_IPG_PD_CMD:
 		{
-			strLog = "SET_IPG_PD_CMD";
+			strCmd = "SET_IPG_PD_CMD";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_LASER_SHIFT:
 		{
-			strLog = "SET_LASER_SHIFT";
+			strCmd = "SET_LASER_SHIFT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_INT_FREQ_ALIGN_PARAMS:
 		{
-			strLog = "SET_INT_FREQ_ALIGN_PARAMS";
+			strCmd = "SET_INT_FREQ_ALIGN_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_GOTO_SPEED:
 		{
-			strLog = "SET_GOTO_SPEED";
+			strCmd = "SET_GOTO_SPEED";
 			bRead_double = TRUE;
 			break;
 		}
 		case CMD_ENABLE_IPG_POWER_MODE:
 		{
-			strLog = "ENABLE_IPG_POWER_MODE";
+			strCmd = "ENABLE_IPG_POWER_MODE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_IPG_DIGITAL_POWER:
 		{
-			strLog = "SET_IPG_DIGITAL_POWER";
+			strCmd = "SET_IPG_DIGITAL_POWER";
 			bRead_long = TRUE;
 			break;
 		}
@@ -1870,12 +1712,14 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			lOffset[2] = *(long *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(long);
-			strLog.Format(_T("SET_CUT_SCAN_RATE,%.3f,%.3f,%.3f,%d,%d,%d;"), dRate[0], dRate[1], dRate[2], lOffset[0], lOffset[1], lOffset[2]);
+			strCmd = "SET_CUT_SCAN_RATE";
+			strLog.Format(_T("%s,%.3f,%.3f,%.3f,%d,%d,%d"), strCmd, dRate[0], dRate[1], dRate[2], lOffset[0], lOffset[1], lOffset[2]);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_ENCODER_MOTION:
 		{
-			strLog = "SET_ENCODER_MOTION";
+			strCmd = "SET_ENCODER_MOTION";
 			bRead_long = TRUE;
 			break;
 		}
@@ -1889,7 +1733,9 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			dPredictionTime = *(double *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(double);
-			strLog.Format(_T("SET_MOTION_MODEL_ENABLE,%d,%.3f;"), lMode, dPredictionTime);
+			strCmd = "SET_MOTION_MODEL_ENABLE";
+			strLog.Format(_T("%s,%d,%.3f"), strCmd, lMode, dPredictionTime);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_MODEL_PARAMS:
@@ -1906,24 +1752,26 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(double);
 			dParamB = *(double *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(double);
-			strLog.Format(_T("SET_MOTION_MODEL_PARAMS,%d,%d,%.3f,%.3f;"), lAxis, lIndex, dParamA, dParamB);
+			strCmd = "SET_MOTION_MODEL_PARAMS";
+			strLog.Format(_T("%ㄋ,%d,%d,%.3f,%.3f"), strCmd, lAxis, lIndex, dParamA, dParamB);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_SCAN_CTRL_LASERON_KEEP:
 		{
-			strLog = "SET_SCAN_CTRL_LASERON_KEEP";
+			strCmd = "SET_SCAN_CTRL_LASERON_KEEP";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_SPEED_POWER_PARAMS:
 		{
-			strLog = "SET_MOTION_SPEED_POWER_PARAMS";
+			strCmd = "SET_MOTION_SPEED_POWER_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_LASER_SIGNAL_DELAY:
 		{
-			strLog = "SET_LASER_SIGNAL_DELAY";
+			strCmd = "SET_LASER_SIGNAL_DELAY";
 			bRead_long = TRUE;
 			break;
 		}
@@ -1941,88 +1789,94 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			dMaxAcc = *(double *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(double);
-			strLog.Format(_T("SET_MOTION_ROUTE_PARAMS,%d,%d,%d,%.3f;"), lPulseScale, AccMode, StopAcc, dMaxAcc);
+			strCmd = "SET_MOTION_ROUTE_PARAMS";
+			strLog.Format(_T("%s,%d,%d,%d,%.3f"), strCmd, lPulseScale, AccMode, StopAcc, dMaxAcc);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_PSO_MODE:
 		{
-			strLog = "SET_MOTION_PSO_MODE";
+			strCmd = "SET_MOTION_PSO_MODE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_ROT_CENTER:
 		{
-			strLog = "SET_ROT_CENTER";
+			strCmd = "SET_ROT_CENTER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_ENCODER:
 		{
-			strLog = "SET_MOTION_ENCODER";
+			strCmd = "SET_MOTION_ENCODER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_ECM_SK_CONFIG:
 		{
-			strLog = "SET_ECM_SK_CONFIG";
+			strCmd = "SET_ECM_SK_CONFIG";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_ECM_SK_DATA:
 		{
-			strLog.Format(_T("SET_ECM_SK_DATA,%dBytes;"), usSize);
+			strCmd = "SET_ECM_SK_DATA";
+			strLog.Format(_T("%s,%dBytes"), strCmd, usSize);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_ECM_SK_DATA_EX:
 		{
-			strLog.Format(_T("SET_ECM_SK_DATA_EX,%dBytes;"), usSize);
+			strCmd = "SET_ECM_SK_DATA_EX";
+			strLog.Format(_T("%s,%dBytes"), strCmd, usSize);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_COMP_PARAMS:
 		{
-			strLog = "SET_MOTION_COMP_PARAMS";
+			strCmd = "SET_MOTION_COMP_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_COMP_DATA:
 		{
-			strLog = "SET_MOTION_COMP_DATA";
+			strCmd = "SET_MOTION_COMP_DATA";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_ROUTE_AXIS_MAP:
 		{
-			strLog = "SET_MOTION_ROUTE_AXIS_MAP";
+			strCmd = "SET_MOTION_ROUTE_AXIS_MAP";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_WAIT_ENCODER_TRG_PARAM:
 		{
-			strLog = "SET_WAIT_ENCODER_TRG_PARAM";
+			strCmd = "SET_WAIT_ENCODER_TRG_PARAM";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_EXEC_LIST_JUMP_POS:
 		{
-			strLog = "SET_EXEC_LIST_JUMP_POS";
+			strCmd = "SET_EXEC_LIST_JUMP_POS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_LASER_SHIFT_TIME:
 		{
-			strLog = "SET_LASER_SHIFT_TIME";
+			strCmd = "SET_LASER_SHIFT_TIME";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_AMOF_AXIS_MAP:
 		{
-			strLog = "SET_AMOF_AXIS_MAP";
+			strCmd = "SET_AMOF_AXIS_MAP";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_SCAN_MODEL_MODE:
 		{
-			strLog = "SET_SCAN_MODEL_MODE";
+			strCmd = "SET_SCAN_MODEL_MODE";
 			bRead_long = TRUE;
 			break;
 		}
@@ -2039,81 +1893,83 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(double);
 			dToleErr = *(double *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(double);
-			strLog.Format(_T("SET_SCAN_ACC_MODEL_PARAMS,%d,%.3f,%.3f;"), lAxis, dAcc, dToleErr);
+			strCmd = "SET_SCAN_ACC_MODEL_PARAMS";
+			strLog.Format(_T("%s,%d,%.3f,%.3f"), strCmd, lAxis, dAcc, dToleErr);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_RING_BUFFER_COUNT_ADD:
 		{
-			strLog = "RING_BUFFER_COUNT_ADD;";
+			strCmd = "RING_BUFFER_COUNT_ADD";
 			break;
 		}
 		case CMD_SET_PWM_BURST_PARAMS:
 		{
-			strLog = "SET_PWM_BURST_PARAMS";
+			strCmd = "SET_PWM_BURST_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_JUMP_TO:
 		{
-			strLog = "LIST_JUMP_TO;";
+			strCmd = "LIST_JUMP_TO";
 			break;
 		}
 		case CMD_LIST_MARK_TO:
 		{
-			strLog = "LIST_MARK_TO;";
+			strCmd = "LIST_MARK_TO";
 			break;
 		}
 		case CMD_LIST_JUMP_SPEED:
 		{
-			strLog = "LIST_JUMP_SPEED";
+			strCmd = "LIST_JUMP_SPEED";
 			bRead_double = TRUE;
 			break;
 		}
 		case CMD_LIST_MARK_SPEED:
 		{
-			strLog = "LIST_MARK_SPEED";
+			strCmd = "LIST_MARK_SPEED";
 			bRead_double = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_LASER_DELAY:
 		{
-			strLog = "LIST_SET_LASER_DELAY";
+			strCmd = "LIST_SET_LASER_DELAY";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_SCANNER_DELAY:
 		{
-			strLog = "LIST_SET_SCANNER_DELAY";
+			strCmd = "LIST_SET_SCANNER_DELAY";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_LASER_TIMING:
 		{
-			strLog = "LIST_SET_LASER_TIMING";
+			strCmd = "LIST_SET_LASER_TIMING";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_LASER_ON:
 		{
-			strLog = "LIST_LASER_ON";
+			strCmd = "LIST_LASER_ON";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_LASER_SIGNAL_ON:
 		{
-			strLog = "LIST_LASER_SIGNAL_ON";
+			strCmd = "LIST_LASER_SIGNAL_ON";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_LASER_FPK:
 		{
-			strLog = "LIST_SET_LASER_FPK";
+			strCmd = "LIST_SET_LASER_FPK";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_STANDBY:
 		{
-			strLog = "LIST_SET_STANDBY";
+			strCmd = "LIST_SET_STANDBY";
 			bRead_ulong = TRUE;
 			break;
 		}
@@ -2130,7 +1986,9 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_ARC_ABS,%d,%d,%.3f;"), x, y, fAngle);
+			strCmd = "LIST_ARC_ABS";
+			strLog.Format(_T("%s,%d,%d,%.3f"), strCmd, x, y, fAngle);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_ARC_REL:
@@ -2146,103 +2004,106 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_ARC_REL,%d,%d,%.3f;"), x, y, fAngle);
+			strCmd = "LIST_ARC_REL";
+			strLog.Format(_T("%s,%d,%d,%.3f"), strCmd, x, y, fAngle);
+			bRead_MultiTypes = TRUE;
+			break;
 		}
 		case CMD_LIST_CLEAR_IO_COND_LIST:
 		{
-			strLog = "LIST_CLEAR_IO_COND_LIST";
+			strCmd = "LIST_CLEAR_IO_COND_LIST";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_JUMP_ABS:
 		{
-			strLog = "LIST_JUMP_ABS";
+			strCmd = "LIST_JUMP_ABS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_JUMP_REL:
 		{
-			strLog = "LIST_JUMP_REL";
+			strCmd = "LIST_JUMP_REL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_LIST_CALL:
 		{
-			strLog = "LIST_LIST_CALL";
+			strCmd = "LIST_LIST_CALL";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_CALL_COND:
 		{
-			strLog = "LIST_CALL_COND";
+			strCmd = "LIST_CALL_COND";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_JUMP_COND:
 		{
-			strLog = "LIST_JUMP_COND";
+			strCmd = "LIST_JUMP_COND";
 			bRead_ulong = TRUE;
 			break;
 		}		
 		case CMD_LIST_LIST_NOP:
 		{
-			strLog = "LIST_LIST_NOP;";
+			strCmd = "LIST_LIST_NOP";
 			break;
 		}
 		case CMD_LIST_LIST_RETURN:
 		{
-			strLog = "LIST_LIST_RETURN;";
+			strCmd = "LIST_LIST_RETURN";
 			break;
 		}
 		case CMD_LIST_LONG_DELAY:
 		{
-			strLog = "LIST_LONG_DELAY";
+			strCmd = "LIST_LONG_DELAY";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_MARK_ABS:
 		{
-			strLog = "LIST_MARK_ABS";
+			strCmd = "LIST_MARK_ABS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MARK_REL:
 		{
-			strLog = "LIST_MARK_REL";
+			strCmd = "LIST_MARK_REL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SAVE_AND_RESTART_TIMER:
 		{
-			strLog = "LIST_SAVE_AND_RESTART_TIMER;";
+			strCmd = "LIST_SAVE_AND_RESTART_TIMER";
 			break;
 		}
 		case CMD_LIST_SET_CONTROL_MODE_LIST:
 		{
-			strLog = "LIST_SET_CONTROL_MODE_LIST";
+			strCmd = "LIST_SET_CONTROL_MODE_LIST";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_END_OF_LIST:
 		{
-			strLog = "LIST_SET_END_OF_LIST;";
+			strCmd = "LIST_SET_END_OF_LIST";
 			break;
 		}
 		case CMD_LIST_SET_EXTSTARTPOS_LIST:
 		{
-			strLog = "LIST_SET_EXTSTARTPOS_LIST";
+			strCmd = "LIST_SET_EXTSTARTPOS_LIST";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_IO_COND_LIST:
 		{
-			strLog = "LIST_SET_IO_COND_LIST";
+			strCmd = "LIST_SET_IO_COND_LIST";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_LIST_JUMP:
 		{
-			strLog = "LIST_SET_LIST_JUMP";
+			strCmd = "LIST_SET_LIST_JUMP";
 			bRead_long = TRUE;
 			break;
 		}
@@ -2258,18 +2119,20 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(unsigned long);
 			m_ij = *(double *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(double);
-			strLog.Format(_T("LIST_SET_MATRIX_LIST,%d,%d,%.3f;"), uli, ulj, m_ij);
+			strCmd = "LIST_SET_MATRIX_LIST";
+			strLog.Format(_T("%s,%d,%d,%.3f"), strCmd, uli, ulj, m_ij);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_OFFSET_LIST:
 		{
-			strLog = "LIST_SET_OFFSET_LIST";
+			strCmd = "LIST_SET_OFFSET_LIST";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_PIXEL:
 		{
-			strLog = "LIST_SET_PIXEL";
+			strCmd = "LIST_SET_PIXEL";
 			bRead_ulong = TRUE;
 			break;
 		}
@@ -2289,23 +2152,25 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(float);
 			da_ch = *(unsigned long *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(unsigned long);
-			strLog.Format(_T("LIST_SET_PIXEL_LINE,%d,%d,%.3f,%.3f,%d;"), pixel_mode, pixel_period, X, Y, da_ch);
+			strCmd = "LIST_SET_PIXEL_LINE";
+			strLog.Format(_T("%s,%d,%d,%.3f,%.3f,%d"), strCmd, pixel_mode, pixel_period, X, Y, da_ch);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_SCANNER_DELAYS:
 		{
-			strLog = "LIST_SET_SCANNER_DELAYS;";
+			strCmd = "LIST_SET_SCANNER_DELAYS";
 			break;
 		}
 		case CMD_LIST_SET_TRIGGER:
 		{
-			strLog = "LIST_SET_TRIGGER";
+			strCmd = "LIST_SET_TRIGGER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_WAIT:
 		{
-			strLog = "LIST_SET_WAIT";
+			strCmd = "LIST_SET_WAIT";
 			bRead_ulong = TRUE;
 			break;
 		}
@@ -2319,292 +2184,294 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(unsigned long);
 			theta = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_SET_WOBBEL,%d,%.3f;"), amplitude, theta);
+			strCmd = "LIST_SET_WOBBEL";
+			strLog.Format(_T("%s,%d,%.3f"), strCmd, amplitude, theta);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_TIMED_JUMP_ABS:
 		{
-			strLog = "LIST_TIMED_JUMP_ABS";
+			strCmd = "LIST_TIMED_JUMP_ABS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_TIMED_JUMP_REL:
 		{
-			strLog = "LIST_TIMED_JUMP_REL";
+			strCmd = "LIST_TIMED_JUMP_REL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_TIMED_MARK_ABS:
 		{
-			strLog = "LIST_TIMED_MARK_ABS";
+			strCmd = "LIST_TIMED_MARK_ABS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_TIMED_MARK_REL:
 		{
-			strLog = "LIST_TIMED_MARK_REL";
+			strCmd = "LIST_TIMED_MARK_REL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_WRITE_8BIT_PORT_LIST:
 		{
-			strLog = "LIST_WRITE_8BIT_PORT_LIST";
+			strCmd = "LIST_WRITE_8BIT_PORT_LIST";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_WRITE_DA_X_LIST:
 		{
-			strLog = "LIST_WRITE_DA_X_LIST";
+			strCmd = "LIST_WRITE_DA_X_LIST";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_WRITE_IO_PORT_LIST:
 		{
-			strLog = "LIST_WRITE_IO_PORT_LIST";
+			strCmd = "LIST_WRITE_IO_PORT_LIST";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_Z_OUT_LIST:
 		{
-			strLog = "LIST_Z_OUT_LIST";
+			strCmd = "LIST_Z_OUT_LIST";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_MOVETO:
 		{
-			strLog = "LIST_MOTION_MOVETO";
+			strCmd = "LIST_MOTION_MOVETO";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_MOTION_XYTABLE:
 		{
-			strLog = "LIST_SET_MOTION_XYTABLE";
+			strCmd = "LIST_SET_MOTION_XYTABLE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MARK_SPOT:
 		{
-			strLog = "LIST_MARK_SPOT";
+			strCmd = "LIST_MARK_SPOT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_WRITE_IO_PORT_LIST_EX:
 		{
-			strLog = "LIST_WRITE_IO_PORT_LIST_EX";
+			strCmd = "LIST_WRITE_IO_PORT_LIST_EX";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_MARKING_READY_LIST:
 		{
-			strLog = "SET_MARKING_READY_LIST";
+			strCmd = "SET_MARKING_READY_LIST";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_SET_MOTION_HOME_LIST:
 		{
-			strLog = "SET_MOTION_HOME_LIST";
+			strCmd = "SET_MOTION_HOME_LIST";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_XYTABLE_HOME_LIST:
 		{
-			strLog = "SET_XYTABLE_HOME_LIST";
+			strCmd = "SET_XYTABLE_HOME_LIST";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_LABEL_LIST:
 		{
-			strLog = "SET_LABEL_LIST";
+			strCmd = "SET_LABEL_LIST";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_COND_TIMEOUT:
 		{
-			strLog = "SET_COND_TIMEOUT";
+			strCmd = "SET_COND_TIMEOUT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_FLY_X_LIST:
 		{
-			strLog = "SET_FLY_X_LIST";
+			strCmd = "SET_FLY_X_LIST";
 			bRead_double = TRUE;
 			break;
 		}
 		case CMD_SET_FLY_Y_LIST:
 		{
-			strLog = "SET_FLY_Y_LIST";
+			strCmd = "SET_FLY_Y_LIST";
 			bRead_double = TRUE;
 			break;
 		}
 		case CMD_SET_FLY_DELAY_LIST:
 		{
-			strLog = "SET_FLY_DELAY_LIST";
+			strCmd = "SET_FLY_DELAY_LIST";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_SET_SIMULATE_ENCODER_LIST:
 		{
-			strLog = "SET_SIMULATE_ENCODER_LIST";
+			strCmd = "SET_SIMULATE_ENCODER_LIST";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_JUMP_3D_ABS:
 		{
-			strLog = "LIST_JUMP_3D_ABS";
+			strCmd = "LIST_JUMP_3D_ABS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_JUMP_3D_REL:
 		{
-			strLog = "LIST_JUMP_3D_REL";
+			strCmd = "LIST_JUMP_3D_REL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MARK_3D_ABS:
 		{
-			strLog = "LIST_MARK_3D_ABS";
+			strCmd = "LIST_MARK_3D_ABS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MARK_3D_REL:
 		{
-			strLog = "LIST_MARK_3D_REL";
+			strCmd = "LIST_MARK_3D_REL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_TIMED_JUMP_3D_ABS:
 		{
-			strLog = "LIST_TIMED_JUMP_3D_ABS";
+			strCmd = "LIST_TIMED_JUMP_3D_ABS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_TIMED_JUMP_3D_REL:
 		{
-			strLog = "LIST_TIMED_JUMP_3D_REL";
+			strCmd = "LIST_TIMED_JUMP_3D_REL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_TIMED_MARK_3D_ABS:
 		{
-			strLog = "LIST_TIMED_MARK_3D_ABS";
+			strCmd = "LIST_TIMED_MARK_3D_ABS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_TIMED_MARK_3D_REL:
 		{
-			strLog = "LIST_TIMED_MARK_3D_REL";
+			strCmd = "LIST_TIMED_MARK_3D_REL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_RESET_PULSE_COUNT:
 		{
-			strLog = "LIST_RESET_PULSE_COUNT";
+			strCmd = "LIST_RESET_PULSE_COUNT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_MOTION_XY:
 		{
-			strLog = "LIST_SET_MOTION_XY";
+			strCmd = "LIST_SET_MOTION_XY";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_LAYER_ENCODER_CNT:
 		{
-			strLog = "LIST_SET_LAYER_ENCODER_CNT";
+			strCmd = "LIST_SET_LAYER_ENCODER_CNT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_WAIT_ENCODER_CNT:
 		{
-			strLog = "LIST_WAIT_ENCODER_CNT;";
+			strCmd = "LIST_WAIT_ENCODER_CNT";
 			break;
 		}
 		case CMD_LIST_JOGSTART:
 		{
-			strLog = "LIST_JOGSTART";
+			strCmd = "LIST_JOGSTART";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_JOGEND:
 		{
-			strLog = "LIST_JOGEND";
+			strCmd = "LIST_JOGEND";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MARK_POLY:
 		{
-			strLog = "LIST_MARK_POLY;";
+			strCmd = "LIST_MARK_POLY";
 			break;
 		}
 		case CMD_LIST_DOT_MARK_ABS:
 		{
-			strLog = "LIST_DOT_MARK_ABS";
+			strCmd = "LIST_DOT_MARK_ABS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_DOT_MARK_3D_ABS:
 		{
-			strLog = "LIST_DOT_MARK_3D_ABS";
+			strCmd = "LIST_DOT_MARK_3D_ABS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_PWM_VARPERIOD:
 		{
-			strLog = "LIST_SET_PWM_VARPERIOD";
+			strCmd = "LIST_SET_PWM_VARPERIOD";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_WOBBEL_2:
 		{
-			strLog = "LIST_SET_WOBBEL_2";
+			strCmd = "LIST_SET_WOBBEL_2";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_SKYWRITING_MODE:
 		{
-			strLog = "LIST_SET_SKYWRITING_MODE";
+			strCmd = "LIST_SET_SKYWRITING_MODE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SCAN_XY_ENABLE:
 		{
-			strLog = "LIST_SCAN_XY_ENABLE";
+			strCmd = "LIST_SCAN_XY_ENABLE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SYN_CONDITION:
 		{
-			strLog = "LIST_SYN_CONDITION";
+			strCmd = "LIST_SYN_CONDITION";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_ADD_XY:
 		{
-			strLog = "LIST_MOTION_ARC_ADD_XY";
+			strCmd = "LIST_MOTION_ARC_ADD_XY";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_ADD_RZ:
 		{
-			strLog = "LIST_MOTION_ARC_ADD_RZ";
+			strCmd = "LIST_MOTION_ARC_ADD_RZ";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_ADD_TIME:
 		{
-			strLog = "LIST_MOTION_ARC_ADD_TIME";
+			strCmd = "LIST_MOTION_ARC_ADD_TIME";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_LON_STEP:
 		{
-			strLog = "LIST_MOTION_ARC_LON_STEP";
+			strCmd = "LIST_MOTION_ARC_LON_STEP";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_START:
 		{
-			strLog = "LIST_MOTION_ARC_START";
+			strCmd = "LIST_MOTION_ARC_START";
 			bRead_long = TRUE;
 			break;
 		}
@@ -2622,7 +2489,9 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(float);
 			step = *(long *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(long);
-			strLog.Format(_T("LIST_TIMED_ARC_ABS,%d,%d,%.3f,%d;"), x, y, fAngle, step);
+			strCmd = "LIST_TIMED_ARC_ABS";
+			strLog.Format(_T("%s,%d,%d,%.3f,%d"), strCmd, x, y, fAngle, step);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_TIMED_ARC_REL:
@@ -2639,7 +2508,9 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(float);
 			step = *(long *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(long);
-			strLog.Format(_T("LIST_TIMED_ARC_ABS,%d,%d,%.3f,%d;"), dx, dy, fAngle, step);
+			strCmd = "LIST_TIMED_ARC_ABS";
+			strLog.Format(_T("%s,%d,%d,%.3f,%d"), strCmd, dx, dy, fAngle, step);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_ARC_3D_ABS:
@@ -2656,7 +2527,9 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_ARC_3D_ABS,%d,%d,%d,%.3f;"), x, y, z, fAngle);
+			strCmd = "LIST_ARC_3D_ABS";
+			strLog.Format(_T("%s,%d,%d,%d,%.3f"), strCmd, x, y, z, fAngle);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_ARC_3D_REL:
@@ -2673,7 +2546,9 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_ARC_3D_REL,%d,%d,%d,%.3f;"), dx, dy, dz, fAngle);
+			strCmd = "LIST_ARC_3D_REL";
+			strLog.Format(_T("%s,%d,%d,%d,%.3f"), strCmd, dx, dy, dz, fAngle);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_TIMED_ARC_3D_ABS:
@@ -2692,7 +2567,9 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_TIMED_ARC_3D_ABS,%d,%d,%d,%d,%.3f;"), step, x, y, z, fAngle);
+			strCmd = "LIST_TIMED_ARC_3D_ABS";
+			strLog.Format(_T("%s,%d,%d,%d,%d,%.3f"), strCmd, step, x, y, z, fAngle);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_TIMED_ARC_3D_REL:
@@ -2711,30 +2588,32 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_TIMED_ARC_3D_REL,%d,%d,%d,%d,%.3f;"), step, dx, dy, dz, fAngle);
+			strCmd = "LIST_TIMED_ARC_3D_REL";
+			strLog.Format(_T("%s,%d,%d,%d,%d,%.3f"), strCmd, step, dx, dy, dz, fAngle);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_MOVETO_MULTI:
 		{
-			strLog = "LIST_MOTION_MOVETO_MULTI";
+			strCmd = "LIST_MOTION_MOVETO_MULTI";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_SCAN_PSO:
 		{
-			strLog = "LIST_SET_SCAN_PSO";
+			strCmd = "LIST_SET_SCAN_PSO";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_WAIT_ENCODER:
 		{
-			strLog = "LIST_WAIT_ENCODER";
+			strCmd = "LIST_WAIT_ENCODER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_ENCODER_JUMP:
 		{
-			strLog = "LIST_ENCODER_JUMP";
+			strCmd = "LIST_ENCODER_JUMP";
 			bRead_long = TRUE;
 			break;
 		}
@@ -2748,65 +2627,67 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			dSpeed = *(double *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(double);
-			strLog.Format(_T("LIST_SET_ENCODER_FLY,%d,%.3f;"), lAxis, dSpeed);
+			strCmd = "LIST_SET_ENCODER_FLY";
+			strLog.Format(_T("%s,%d,%.3f"), strCmd, lAxis, dSpeed);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_LOOP_CNT:
 		{
-			strLog = "LIST_SET_LOOP_CNT";
+			strCmd = "LIST_SET_LOOP_CNT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_LOOP_JUMP:
 		{
-			strLog = "LIST_SET_LOOP_JUMP";
+			strCmd = "LIST_SET_LOOP_JUMP";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_DIRECT_START:
 		{
-			strLog = "LIST_MOTION_DIRECT_START";
+			strCmd = "LIST_MOTION_DIRECT_START";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_DIRECT_MOVE:
 		{
-			strLog = "LIST_MOTION_DIRECT_MOVE";
+			strCmd = "LIST_MOTION_DIRECT_MOVE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_SCAN_ENABLE:
 		{
-			strLog = "LIST_MOTION_SCAN_ENABLE";
+			strCmd = "LIST_MOTION_SCAN_ENABLE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_WAIT_MOTION_POS:
 		{
-			strLog = "LIST_SET_WAIT_MOTION_POS";
+			strCmd = "LIST_SET_WAIT_MOTION_POS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_WAIT_MOTION_POS:
 		{
-			strLog = "LIST_WAIT_MOTION_POS;";
+			strCmd = "LIST_WAIT_MOTION_POS";
 			break;
 		}
 		case CMD_LIST_SET_DOTLINE_PARAMS:
 		{
-			strLog = "LIST_SET_DOTLINE_PARAMS";
+			strCmd = "LIST_SET_DOTLINE_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SELECT_LIST:
 		{
-			strLog = "LIST_SELECT_LIST";
+			strCmd = "LIST_SELECT_LIST";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_DOTLINE_ONOFF:
 		{
-			strLog = "LIST_SET_DOTLINE_ONOFF";
+			strCmd = "LIST_SET_DOTLINE_ONOFF";
 			bRead_long = TRUE;
 			break;
 		}
@@ -2824,7 +2705,9 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(float);
 			Phi = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_SET_ELLIPSE,%d,%d,%.3f,%.3f;"), a, b, Phi0, Phi);
+			strCmd = "LIST_SET_ELLIPSE";
+			strLog.Format(_T("%s,%d,%d,%.3f,%.3f"), strCmd, a, b, Phi0, Phi);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_ELLIPSE_ABS:
@@ -2841,7 +2724,9 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			theta = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_ELLIPSE_ABS,%d,%d,%d,%.3f;"), mode, x, y, theta);
+			strCmd = "LIST_ELLIPSE_ABS";
+			strLog.Format(_T("%s,%d,%d,%d,%.3f"), strCmd, mode, x, y, theta);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_ELLIPSE_REL:
@@ -2858,72 +2743,74 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			theta = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_ELLIPSE_REL,%d,%d,%d,%.3f;"), mode, x, y, theta);
+			strCmd = "LIST_ELLIPSE_REL";
+			strLog.Format(_T("%s,%d,%d,%d,%.3f"), strCmd, mode, x, y, theta);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_NG_RESET_POINT:
 		{
-			strLog = "LIST_SET_NG_RESET_POINT";
+			strCmd = "LIST_SET_NG_RESET_POINT";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_ADD_X_EX:
 		{
-			strLog = "LIST_MOTION_ARC_ADD_X_EX";
+			strCmd = "LIST_MOTION_ARC_ADD_X_EX";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_ADD_Y_EX:
 		{
-			strLog = "LIST_MOTION_ARC_ADD_Y_EX";
+			strCmd = "LIST_MOTION_ARC_ADD_Y_EX";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_ADD_TIME_EX:
 		{
-			strLog = "LIST_MOTION_ARC_ADD_TIME_EX";
+			strCmd = "LIST_MOTION_ARC_ADD_TIME_EX";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_START_EX:
 		{
-			strLog = "LIST_MOTION_ARC_START_EX";
+			strCmd = "LIST_MOTION_ARC_START_EX";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_RECORD_MARK_TIME:
 		{
-			strLog = "LIST_RECORD_MARK_TIME";
+			strCmd = "LIST_RECORD_MARK_TIME";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_POWER:
 		{
-			strLog = "LIST_SET_POWER";
+			strCmd = "LIST_SET_POWER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_NG_LIST_JUMP:
 		{
-			strLog = "LIST_NG_LIST_JUMP";
+			strCmd = "LIST_NG_LIST_JUMP";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_SCAN_FEEDBACK_MODE:
 		{
-			strLog = "LIST_SET_SCAN_FEEDBACK_MODE";
+			strCmd = "LIST_SET_SCAN_FEEDBACK_MODE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_PSO_MODE:
 		{
-			strLog = "LIST_SET_PSO_MODE";
+			strCmd = "LIST_SET_PSO_MODE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_AMOF_SYNC:
 		{
-			strLog = "LIST_AMOF_SYNC";
+			strCmd = "LIST_AMOF_SYNC";
 			bRead_long = TRUE;
 			break;
 		}
@@ -2941,7 +2828,9 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(float);
 			theta2 = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_SET_ADV_WOBBEL_MODE,%d,%d,%.3f,%.3f;"), lEnable, lUpdateCnt, theta1, theta2);
+			strCmd = "LIST_SET_ADV_WOBBEL_MODE";
+			strLog.Format(_T("%s,%d,%d,%.3f,%.3f"), strCmd, lEnable, lUpdateCnt, theta1, theta2);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_ADV_WOBBEL_WAVE:
@@ -2962,12 +2851,14 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(float);
 			start2 = *(float *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(float);
-			strLog.Format(_T("LIST_SET_ADV_WOBBEL_WAVE,%d,%.3f,%.3f,%d,%.3f,%.3f;"), lAmpV, theta1, start1, lAmpH, theta2, start2);
+			strCmd = "LIST_SET_ADV_WOBBEL_WAVE";
+			strLog.Format(_T("%s,%d,%.3f,%.3f,%d,%.3f,%.3f"), strCmd, lAmpV, theta1, start1, lAmpH, theta2, start2);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_ENCODER_JUMP_UPDATE:
 		{
-			strLog = "LIST_ENCODER_JUMP_UPDATE";
+			strCmd = "LIST_ENCODER_JUMP_UPDATE";
 			bRead_long = TRUE;
 			break;
 		}
@@ -2983,35 +2874,37 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(float);
 			lDelay = *(long *)&g_ReadBuffer[6+usPtr];
 			usPtr += sizeof(long);
-			strLog.Format(_T("LIST_SET_ADV_WOBBEL_WAVE,%d,%.3f,%d;"), amplitude, theta, lDelay);
+			strCmd = "LIST_SET_ADV_WOBBEL_WAVE";
+			strLog.Format(_T("%s,%d,%.3f,%d"), strCmd, amplitude, theta, lDelay);
+			bRead_MultiTypes = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_IPG_PD_CMD:
 		{
-			strLog = "LIST_SET_IPG_PD_CMD";
+			strCmd = "LIST_SET_IPG_PD_CMD";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_WAIT_IPG_PD:
 		{
-			strLog = "LIST_WAIT_IPG_PD;";
+			strCmd = "LIST_WAIT_IPG_PD";
 			break;
 		}
 		case CMD_LIST_SET_IPG_DIGITAL_POWER:
 		{
-			strLog = "LIST_SET_IPG_DIGITAL_POWER";
+			strCmd = "LIST_SET_IPG_DIGITAL_POWER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_PIXEL_EX:
 		{
-			strLog = "LIST_SET_PIXEL_EX";
+			strCmd = "LIST_SET_PIXEL_EX";
 			bRead_ulong = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_CUT_SCAN_PARAMS:
 		{
-			strLog = "LIST_SET_CUT_SCAN_PARAMS";
+			strCmd = "LIST_SET_CUT_SCAN_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
@@ -3068,90 +2961,90 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_LIST_SPIRAL_ABS:
 		{
-			strLog = "LIST_SPIRAL_ABS";
+			strCmd = "LIST_SPIRAL_ABS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SPIRAL_REL:
 		{
-			strLog = "LIST_SPIRAL_REL";
+			strCmd = "LIST_SPIRAL_REL";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_POWER_COR_PARAMS:
 		{
-			strLog = "LIST_SET_POWER_COR_PARAMS";
+			strCmd = "LIST_SET_POWER_COR_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_LASER_SIGNAL_DELAY:
 		{
-			strLog = "LIST_SET_LASER_SIGNAL_DELAY";
+			strCmd = "LIST_SET_LASER_SIGNAL_DELAY";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_ADD_R_EX:
 		{
-			strLog = "LIST_MOTION_ARC_ADD_R_EX";
+			strCmd = "LIST_MOTION_ARC_ADD_R_EX";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_ADD_Z_EX:
 		{
-			strLog = "LIST_MOTION_ARC_ADD_Z_EX";
+			strCmd = "LIST_MOTION_ARC_ADD_Z_EX";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_MOTION_ARC_ADD_TIME2_EX:
 		{
-			strLog = "LIST_MOTION_ARC_ADD_TIME2_EX";
+			strCmd = "LIST_MOTION_ARC_ADD_TIME2_EX";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_MOTION_SPEED_POWER_PARAMS:
 		{
-			strLog = "LIST_SET_MOTION_SPEED_POWER_PARAMS";
+			strCmd = "LIST_SET_MOTION_SPEED_POWER_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_MOTION_SPEED_UNIT_RATE:
 		{
-			strLog = "LIST_SET_MOTION_SPEED_UNIT_RATE";
+			strCmd = "LIST_SET_MOTION_SPEED_UNIT_RATE";
 			bRead_double = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_ROT_CENTER:
 		{
-			strLog = "LIST_SET_ROT_CENTER";
+			strCmd = "LIST_SET_ROT_CENTER";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_FLY_ROT:
 		{
-			strLog = "LIST_SET_FLY_ROT";
+			strCmd = "LIST_SET_FLY_ROT";
 			bRead_double = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_INT_FREQ_ALIGN_PARAMS:
 		{
-			strLog = "LIST_SET_INT_FREQ_ALIGN_PARAMS";
+			strCmd = "LIST_SET_INT_FREQ_ALIGN_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_WAIT_ENCODER_TRIGGER:
 		{
-			strLog = "LIST_WAIT_ENCODER_TRIGGER;";
+			strCmd = "LIST_WAIT_ENCODER_TRIGGER";
 			break;
 		}
 		case CMD_LIST_SET_EXEC_LIST_JUMP:
 		{
-			strLog = "LIST_SET_EXEC_LIST_JUMP";
+			strCmd = "LIST_SET_EXEC_LIST_JUMP";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_CURVE_DOTLINE_MODE:
 		{
-			strLog = "LIST_CURVE_DOTLINE_MODE";
+			strCmd = "LIST_CURVE_DOTLINE_MODE";
 			bRead_long = TRUE;
 			break;
 		}
@@ -3174,33 +3067,37 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_LIST_DASH_LINE:
 		{
-			strLog = "LIST_DASH_LINE";
+			strCmd = "LIST_DASH_LINE";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_EXT_START_POS:
 		{
-			strLog = "LIST_SET_EXT_START_POS";
+			strCmd = "LIST_SET_EXT_START_POS";
 			bRead_long = TRUE;
 			break;
 		}
 		case CMD_LIST_SET_PWM_BURST_PARAMS:
 		{
-			strLog = "LIST_SET_PWM_BURST_PARAMS";
+			strCmd = "LIST_SET_PWM_BURST_PARAMS";
 			bRead_long = TRUE;
 			break;
 		}
 		default:
 		{
-			strLog.Format(_T("CMD0x%x,%dBytes;"), usCmd, usSize);
+			strCmd.Format(_T("CMD0x%x,%dBytes"), usCmd, usSize);
 			break;
 		}
 		}
 
+		if(!bRead_MultiTypes)
+			strLog = strCmd;
+
+		CString strData;
+
 		if(bRead_short)
 		{
 			short sReadData[512];
-			CString strData;
 
 			memset(sReadData, 0, sizeof(sReadData));
 			for(int i = 0; i < usSize/2; i++)
@@ -3209,14 +3106,11 @@ int CmdTransfer(SOCKET sd_connect)
 				strData.Format(_T(",%d"), sReadData[i]);
 				strLog.Append(strData);
 			}
-			strData = ";";
-			strLog.Append(strData);
 		}
 
 		if(bRead_long)
 		{
 			long lReadData[256];
-			CString strData;
 
 			memset(lReadData, 0, sizeof(lReadData));
 			for(int i = 0; i < usSize/4; i++)
@@ -3225,14 +3119,11 @@ int CmdTransfer(SOCKET sd_connect)
 				strData.Format(_T(",%d"), lReadData[i]);
 				strLog.Append(strData);
 			}
-			strData = ";";
-			strLog.Append(strData);
 		}
 
 		if(bRead_ulong)
 		{
 			unsigned long ulReadData[256];
-			CString strData;
 
 			memset(ulReadData, 0, sizeof(ulReadData));
 			for(int i = 0; i < usSize/4; i++)
@@ -3241,14 +3132,11 @@ int CmdTransfer(SOCKET sd_connect)
 				strData.Format(_T(",%d"), ulReadData[i]);
 				strLog.Append(strData);
 			}
-			strData = ";";
-			strLog.Append(strData);
 		}
 
 		if(bRead_double)
 		{
 			double dReadData[128];
-			CString strData;
 
 			memset(dReadData, 0, sizeof(dReadData));
 			for(int i = 0; i < usSize/8; i++)
@@ -3257,9 +3145,10 @@ int CmdTransfer(SOCKET sd_connect)
 				strData.Format(_T(",%.3f"), dReadData[i]);
 				strLog.Append(strData);
 			}
-			strData = ";";
-			strLog.Append(strData);
 		}
+
+		strData = ";";
+		strLog.Append(strData);
 
 		if(bReplyNull)
 		{
@@ -3273,7 +3162,9 @@ int CmdTransfer(SOCKET sd_connect)
 			strTmp.Format(_T("Error:%d"), WSAGetLastError());
 		
 		strLog.Append(strTmp);
-		WriteLog(strLog);
+		bCmdLogEnable = GetPrivateProfileInt(_T("CMD"), strCmd, 1, g_strINIpath);
+		if(bCmdLogEnable)
+			WriteLog(strLog);
     }
 
 	return iReadSize;
@@ -3603,11 +3494,12 @@ int CEMC6_ServerDlg::GetHostIP(char *IPName)
 void CEMC6_ServerDlg::OnBnClickedButtonStart()
 {
 	int iRet;
-	CString strLog;
+	CString strLog, strCmd;
 	int ilen = sizeof(struct sockaddr_in);
 	char szIPName[256];
 	char sndbuffer[1024], rcvbuffer[1024];
 	int iSendSize, iRecvSize, iDataSize;
+	BOOL bCmdLogEnable = TRUE;
 
 	sockaddr_in sinRemote;
 	
@@ -3646,7 +3538,8 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 			usSize = *((unsigned short *)rcvbuffer + 2);
 			if(usSN == 0xffff && usCmd == CMD_GET_IP_ADDRESS)
 			{
-				strLog = "GET_IP_ADDRESS;";
+				strCmd = "GET_IP_ADDRESS";
+				strLog = strCmd;
 				
 				memset(sndbuffer, 0, sizeof(sndbuffer));
 				*((unsigned short *)sndbuffer) = 0xffff;
@@ -3654,6 +3547,7 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 				*((unsigned short *)sndbuffer + 2) = (unsigned short)iDataSize;
 				memcpy(sndbuffer+6, szIPName, iDataSize);
 				iSendSize = iDataSize + 6;
+				strLog.Append(_T(";"));
 				if(sendto(m_sock_udp_rcvr, sndbuffer, iSendSize, 0, (sockaddr*)&m_udp_rcvr, sizeof(m_udp_rcvr)) < 0)
 				{
 					CString strTmp;
@@ -3666,7 +3560,9 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 					strIP.Format(_T("%s"), szIPName);
 					strLog.Append(strIP);
 				}
-				WriteLog(strLog);
+				bCmdLogEnable = GetPrivateProfileInt(_T("CMD"), strCmd, 1, g_strINIpath);
+				if(bCmdLogEnable)
+					WriteLog(strLog);
 			}
 			else
 			{
