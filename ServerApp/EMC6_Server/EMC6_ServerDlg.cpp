@@ -830,22 +830,22 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_LOAD_PROGRAM_FILE:
 		{
-			strLog = "LOAD_PROGRAM_FILE";
+			strLog = "LOAD_PROGRAM_FILE;";
 			break;
 		}
 		case CMD_QUIT_LOOP:
 		{
-			strLog = "QUIT_LOOP";
+			strLog = "QUIT_LOOP;";
 			break;
 		}
 		case CMD_RELEASE_WAIT:
 		{
-			strLog = "RELEASE_WAIT";
+			strLog = "RELEASE_WAIT;";
 			break;
 		}
 		case CMD_RESTART_LIST:
 		{
-			strLog = "RESTART_LIST";
+			strLog = "RESTART_LIST;";
 			break;
 		}
 		case CMD_SELECT_COR_TABLE:
@@ -867,7 +867,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_SELECT_RTC:
 		{
-			strLog = "SELECT_RTC";
+			strLog = "SELECT_RTC;";
 			break;
 		}
 		case CMD_SET_CONTROL_MODE:
@@ -986,7 +986,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_SET_FLYSPEED_UPDATE_TIME:
 		{
-			strLog = "SET_FLYSPEED_UPDATE_TIME";
+			strLog = "SET_FLYSPEED_UPDATE_TIME;";
 			break;
 		}
 		case CMD_SET_PWM_VARPERIOD:
@@ -1107,12 +1107,12 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_SET_MOTION_PARAM2:
 		{
-			strLog = "SET_MOTION_PARAM2";
+			strLog = "SET_MOTION_PARAM2;";
 			break;
 		}
 		case CMD_SET_MOTION_PARAM3:
 		{
-			strLog = "SET_MOTION_PARAM3";
+			strLog = "SET_MOTION_PARAM3;";
 			break;
 		}
 		case CMD_SET_MOTION_XYTABLE:
@@ -1153,7 +1153,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_REBOOT:
 		{
-			strLog = "REBOOT";
+			strLog = "REBOOT;";
 			break;
 		}
 		case CMD_JOGSTART:
@@ -1206,7 +1206,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_DSP_START:
 		{
-			strLog = "DSP_START";
+			strLog = "DSP_START;";
 			break;
 		}
 		case CMD_SET_PROGRAM_READY:
@@ -1295,12 +1295,12 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_STOP_LIST:
 		{
-			strLog = "STOP_LIST";
+			strLog = "STOP_LIST;";
 			break;
 		}
 		case CMD_STOP_EXEC:
 		{
-			strLog = "STOP_EXEC";
+			strLog = "STOP_EXEC;";
 			break;
 		}
 		case CMD_START_LIST:
@@ -1323,12 +1323,12 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_MOTION_ARC_CLR:
 		{
-			strLog = "MOTION_ARC_CLR";
+			strLog = "MOTION_ARC_CLR;";
 			break;
 		}
 		case CMD_MOTION_ARC_START:
 		{
-			strLog = "MOTION_ARC_START";
+			strLog = "MOTION_ARC_START;";
 			break;
 		}
 		case CMD_MOTION_ARC_ADD:
@@ -1339,7 +1339,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_ENCODER_MOTION:
 		{
-			strLog = "ENCODER_MOTION";
+			strLog = "ENCODER_MOTION;";
 			break;
 		}
 		case CMD_SET_STARTSTOP_FILTER:
@@ -1368,7 +1368,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_LOAD_CORRECTION_FILE_3D:
 		{
-			strLog = "LOAD_CORRECTION_FILE_3D";
+			strLog = "LOAD_CORRECTION_FILE_3D;";
 			break;
 		}
 		case CMD_LOAD_VARPOLYDELAY:
@@ -1554,12 +1554,12 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_MOTION_ARC_CLR_EX:
 		{
-			strLog = "MOTION_ARC_CLR_EX";
+			strLog = "MOTION_ARC_CLR_EX;";
 			break;
 		}
 		case CMD_MOTION_ARC_START_EX:
 		{
-			strLog = "MOTION_ARC_START_EX";
+			strLog = "MOTION_ARC_START_EX;";
 			break;
 		}
 		case CMD_MOTION_ARC_ADD_EX:
@@ -2018,7 +2018,7 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_RING_BUFFER_COUNT_ADD:
 		{
-			strLog = "RING_BUFFER_COUNT_ADD";
+			strLog = "RING_BUFFER_COUNT_ADD;";
 			break;
 		}
 		case CMD_SET_PWM_BURST_PARAMS:
@@ -2027,58 +2027,1143 @@ int CmdTransfer(SOCKET sd_connect)
 			bRead_long = TRUE;
 			break;
 		}
-		// case CMD_LIST_JUMP_TO:
-		// {
+		case CMD_LIST_JUMP_TO:
+		{
+			strLog = "LIST_JUMP_TO;";
+			break;
+		}
+		case CMD_LIST_MARK_TO:
+		{
+			strLog = "LIST_MARK_TO;";
+			break;
+		}
+		case CMD_LIST_JUMP_SPEED:
+		{
+			strLog = "LIST_JUMP_SPEED";
+			bRead_double = TRUE;
+			break;
+		}
+		case CMD_LIST_MARK_SPEED:
+		{
+			strLog = "LIST_MARK_SPEED";
+			bRead_double = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_LASER_DELAY:
+		{
+			strLog = "LIST_SET_LASER_DELAY";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_SCANNER_DELAY:
+		{
+			strLog = "LIST_SET_SCANNER_DELAY";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_LASER_TIMING:
+		{
+			strLog = "LIST_SET_LASER_TIMING";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_LASER_ON:
+		{
+			strLog = "LIST_LASER_ON";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_LASER_SIGNAL_ON:
+		{
+			strLog = "LIST_LASER_SIGNAL_ON";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_LASER_FPK:
+		{
+			strLog = "LIST_SET_LASER_FPK";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_STANDBY:
+		{
+			strLog = "LIST_SET_STANDBY";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_ARC_ABS:
+		{
+			long x;
+			long y;
+			float fAngle;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_MARK_TO:
-		// {
+			x = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			y = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_ARC_ABS,%d,%d,%.3f;"), x, y, fAngle);
+			break;
+		}
+		case CMD_LIST_ARC_REL:
+		{
+			long x;
+			long y;
+			float fAngle;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_JUMP_SPEED:
-		// {
+			x = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			y = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_ARC_REL,%d,%d,%.3f;"), x, y, fAngle);
+		}
+		case CMD_LIST_CLEAR_IO_COND_LIST:
+		{
+			strLog = "LIST_CLEAR_IO_COND_LIST";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_JUMP_ABS:
+		{
+			strLog = "LIST_JUMP_ABS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_JUMP_REL:
+		{
+			strLog = "LIST_JUMP_REL";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_LIST_CALL:
+		{
+			strLog = "LIST_LIST_CALL";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_CALL_COND:
+		{
+			strLog = "LIST_CALL_COND";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_JUMP_COND:
+		{
+			strLog = "LIST_JUMP_COND";
+			bRead_ulong = TRUE;
+			break;
+		}		
+		case CMD_LIST_LIST_NOP:
+		{
+			strLog = "LIST_LIST_NOP;";
+			break;
+		}
+		case CMD_LIST_LIST_RETURN:
+		{
+			strLog = "LIST_LIST_RETURN;";
+			break;
+		}
+		case CMD_LIST_LONG_DELAY:
+		{
+			strLog = "LIST_LONG_DELAY";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_MARK_ABS:
+		{
+			strLog = "LIST_MARK_ABS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MARK_REL:
+		{
+			strLog = "LIST_MARK_REL";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SAVE_AND_RESTART_TIMER:
+		{
+			strLog = "LIST_SAVE_AND_RESTART_TIMER;";
+			break;
+		}
+		case CMD_LIST_SET_CONTROL_MODE_LIST:
+		{
+			strLog = "LIST_SET_CONTROL_MODE_LIST";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_END_OF_LIST:
+		{
+			strLog = "LIST_SET_END_OF_LIST;";
+			break;
+		}
+		case CMD_LIST_SET_EXTSTARTPOS_LIST:
+		{
+			strLog = "LIST_SET_EXTSTARTPOS_LIST";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_IO_COND_LIST:
+		{
+			strLog = "LIST_SET_IO_COND_LIST";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_LIST_JUMP:
+		{
+			strLog = "LIST_SET_LIST_JUMP";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_MATRIX_LIST:
+		{
+			unsigned long uli, ulj;
+			double m_ij;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_MARK_SPEED:
-		// {
+			uli = *(unsigned long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(unsigned long);
+			ulj = *(unsigned long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(unsigned long);
+			m_ij = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("LIST_SET_MATRIX_LIST,%d,%d,%.3f;"), uli, ulj, m_ij);
+			break;
+		}
+		case CMD_LIST_SET_OFFSET_LIST:
+		{
+			strLog = "LIST_SET_OFFSET_LIST";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_PIXEL:
+		{
+			strLog = "LIST_SET_PIXEL";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_PIXEL_LINE:
+		{
+			unsigned long pixel_mode, pixel_period, da_ch;
+			float X, Y;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_SET_LASER_DELAY:
-		// {
+			pixel_mode = *(unsigned long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(unsigned long);
+			pixel_period = *(unsigned long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(unsigned long);
+			X = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			Y = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			da_ch = *(unsigned long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(unsigned long);
+			strLog.Format(_T("LIST_SET_PIXEL_LINE,%d,%d,%.3f,%.3f,%d;"), pixel_mode, pixel_period, X, Y, da_ch);
+			break;
+		}
+		case CMD_LIST_SET_SCANNER_DELAYS:
+		{
+			strLog = "LIST_SET_SCANNER_DELAYS;";
+			break;
+		}
+		case CMD_LIST_SET_TRIGGER:
+		{
+			strLog = "LIST_SET_TRIGGER";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_WAIT:
+		{
+			strLog = "LIST_SET_WAIT";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_WOBBEL:
+		{
+			unsigned long amplitude;
+			float theta;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_SET_SCANNER_DELAY:
-		// {
+			amplitude = *(unsigned long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(unsigned long);
+			theta = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_SET_WOBBEL,%d,%.3f;"), amplitude, theta);
+			break;
+		}
+		case CMD_LIST_TIMED_JUMP_ABS:
+		{
+			strLog = "LIST_TIMED_JUMP_ABS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_TIMED_JUMP_REL:
+		{
+			strLog = "LIST_TIMED_JUMP_REL";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_TIMED_MARK_ABS:
+		{
+			strLog = "LIST_TIMED_MARK_ABS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_TIMED_MARK_REL:
+		{
+			strLog = "LIST_TIMED_MARK_REL";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_WRITE_8BIT_PORT_LIST:
+		{
+			strLog = "LIST_WRITE_8BIT_PORT_LIST";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_WRITE_DA_X_LIST:
+		{
+			strLog = "LIST_WRITE_DA_X_LIST";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_WRITE_IO_PORT_LIST:
+		{
+			strLog = "LIST_WRITE_IO_PORT_LIST";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_Z_OUT_LIST:
+		{
+			strLog = "LIST_Z_OUT_LIST";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_MOVETO:
+		{
+			strLog = "LIST_MOTION_MOVETO";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_MOTION_XYTABLE:
+		{
+			strLog = "LIST_SET_MOTION_XYTABLE";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MARK_SPOT:
+		{
+			strLog = "LIST_MARK_SPOT";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_WRITE_IO_PORT_LIST_EX:
+		{
+			strLog = "LIST_WRITE_IO_PORT_LIST_EX";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_SET_MARKING_READY_LIST:
+		{
+			strLog = "SET_MARKING_READY_LIST";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_SET_MOTION_HOME_LIST:
+		{
+			strLog = "SET_MOTION_HOME_LIST";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_SET_XYTABLE_HOME_LIST:
+		{
+			strLog = "SET_XYTABLE_HOME_LIST";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_SET_LABEL_LIST:
+		{
+			strLog = "SET_LABEL_LIST";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_SET_COND_TIMEOUT:
+		{
+			strLog = "SET_COND_TIMEOUT";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_SET_FLY_X_LIST:
+		{
+			strLog = "SET_FLY_X_LIST";
+			bRead_double = TRUE;
+			break;
+		}
+		case CMD_SET_FLY_Y_LIST:
+		{
+			strLog = "SET_FLY_Y_LIST";
+			bRead_double = TRUE;
+			break;
+		}
+		case CMD_SET_FLY_DELAY_LIST:
+		{
+			strLog = "SET_FLY_DELAY_LIST";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_SET_SIMULATE_ENCODER_LIST:
+		{
+			strLog = "SET_SIMULATE_ENCODER_LIST";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_JUMP_3D_ABS:
+		{
+			strLog = "LIST_JUMP_3D_ABS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_JUMP_3D_REL:
+		{
+			strLog = "LIST_JUMP_3D_REL";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MARK_3D_ABS:
+		{
+			strLog = "LIST_MARK_3D_ABS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MARK_3D_REL:
+		{
+			strLog = "LIST_MARK_3D_REL";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_TIMED_JUMP_3D_ABS:
+		{
+			strLog = "LIST_TIMED_JUMP_3D_ABS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_TIMED_JUMP_3D_REL:
+		{
+			strLog = "LIST_TIMED_JUMP_3D_REL";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_TIMED_MARK_3D_ABS:
+		{
+			strLog = "LIST_TIMED_MARK_3D_ABS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_TIMED_MARK_3D_REL:
+		{
+			strLog = "LIST_TIMED_MARK_3D_REL";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_RESET_PULSE_COUNT:
+		{
+			strLog = "LIST_RESET_PULSE_COUNT";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_MOTION_XY:
+		{
+			strLog = "LIST_SET_MOTION_XY";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_LAYER_ENCODER_CNT:
+		{
+			strLog = "LIST_SET_LAYER_ENCODER_CNT";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_WAIT_ENCODER_CNT:
+		{
+			strLog = "LIST_WAIT_ENCODER_CNT;";
+			break;
+		}
+		case CMD_LIST_JOGSTART:
+		{
+			strLog = "LIST_JOGSTART";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_JOGEND:
+		{
+			strLog = "LIST_JOGEND";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MARK_POLY:
+		{
+			strLog = "LIST_MARK_POLY;";
+			break;
+		}
+		case CMD_LIST_DOT_MARK_ABS:
+		{
+			strLog = "LIST_DOT_MARK_ABS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_DOT_MARK_3D_ABS:
+		{
+			strLog = "LIST_DOT_MARK_3D_ABS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_PWM_VARPERIOD:
+		{
+			strLog = "LIST_SET_PWM_VARPERIOD";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_WOBBEL_2:
+		{
+			strLog = "LIST_SET_WOBBEL_2";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_SKYWRITING_MODE:
+		{
+			strLog = "LIST_SET_SKYWRITING_MODE";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SCAN_XY_ENABLE:
+		{
+			strLog = "LIST_SCAN_XY_ENABLE";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SYN_CONDITION:
+		{
+			strLog = "LIST_SYN_CONDITION";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_ADD_XY:
+		{
+			strLog = "LIST_MOTION_ARC_ADD_XY";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_ADD_RZ:
+		{
+			strLog = "LIST_MOTION_ARC_ADD_RZ";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_ADD_TIME:
+		{
+			strLog = "LIST_MOTION_ARC_ADD_TIME";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_LON_STEP:
+		{
+			strLog = "LIST_MOTION_ARC_LON_STEP";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_START:
+		{
+			strLog = "LIST_MOTION_ARC_START";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_TIMED_ARC_ABS:
+		{
+			long x, y, step;
+			float fAngle;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_SET_LASER_TIMING:
-		// {
+			x = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			y = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			step = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			strLog.Format(_T("LIST_TIMED_ARC_ABS,%d,%d,%.3f,%d;"), x, y, fAngle, step);
+			break;
+		}
+		case CMD_LIST_TIMED_ARC_REL:
+		{
+			long dx, dy, step;
+			float fAngle;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_LASER_ON:
-		// {
+			dx = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dy = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			step = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			strLog.Format(_T("LIST_TIMED_ARC_ABS,%d,%d,%.3f,%d;"), dx, dy, fAngle, step);
+			break;
+		}
+		case CMD_LIST_ARC_3D_ABS:
+		{
+			long x, y, z;
+			float fAngle;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_LASER_SIGNAL_ON:
-		// {
+			x = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			y = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			z = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_ARC_3D_ABS,%d,%d,%d,%.3f;"), x, y, z, fAngle);
+			break;
+		}
+		case CMD_LIST_ARC_3D_REL:
+		{
+			long dx, dy, dz;
+			float fAngle;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_SET_LASER_FPK:
-		// {
+			dx = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dy = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dz = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_ARC_3D_REL,%d,%d,%d,%.3f;"), dx, dy, dz, fAngle);
+			break;
+		}
+		case CMD_LIST_TIMED_ARC_3D_ABS:
+		{
+			long step, x, y, z;
+			float fAngle;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_SET_STANDBY:
-		// {
+			step = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			x = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			y = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			z = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_TIMED_ARC_3D_ABS,%d,%d,%d,%d,%.3f;"), step, x, y, z, fAngle);
+			break;
+		}
+		case CMD_LIST_TIMED_ARC_3D_REL:
+		{
+			long step, dx, dy, dz;
+			float fAngle;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_ARC_ABS:
-		// {
+			step = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dx = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dy = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dz = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			fAngle = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_TIMED_ARC_3D_REL,%d,%d,%d,%d,%.3f;"), step, dx, dy, dz, fAngle);
+			break;
+		}
+		case CMD_LIST_MOTION_MOVETO_MULTI:
+		{
+			strLog = "LIST_MOTION_MOVETO_MULTI";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_SCAN_PSO:
+		{
+			strLog = "LIST_SET_SCAN_PSO";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_WAIT_ENCODER:
+		{
+			strLog = "LIST_WAIT_ENCODER";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_ENCODER_JUMP:
+		{
+			strLog = "LIST_ENCODER_JUMP";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_ENCODER_FLY:
+		{
+			long lAxis;
+			double dSpeed;
+			unsigned short usPtr = 0;
 
-		// }
-		// case CMD_LIST_ARC_REL:
-		// {
+			lAxis = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dSpeed = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("LIST_SET_ENCODER_FLY,%d,%.3f;"), lAxis, dSpeed);
+			break;
+		}
+		case CMD_LIST_SET_LOOP_CNT:
+		{
+			strLog = "LIST_SET_LOOP_CNT";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_LOOP_JUMP:
+		{
+			strLog = "LIST_SET_LOOP_JUMP";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_DIRECT_START:
+		{
+			strLog = "LIST_MOTION_DIRECT_START";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_DIRECT_MOVE:
+		{
+			strLog = "LIST_MOTION_DIRECT_MOVE";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_SCAN_ENABLE:
+		{
+			strLog = "LIST_MOTION_SCAN_ENABLE";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_WAIT_MOTION_POS:
+		{
+			strLog = "LIST_SET_WAIT_MOTION_POS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_WAIT_MOTION_POS:
+		{
+			strLog = "LIST_WAIT_MOTION_POS;";
+			break;
+		}
+		case CMD_LIST_SET_DOTLINE_PARAMS:
+		{
+			strLog = "LIST_SET_DOTLINE_PARAMS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SELECT_LIST:
+		{
+			strLog = "LIST_SELECT_LIST";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_DOTLINE_ONOFF:
+		{
+			strLog = "LIST_SET_DOTLINE_ONOFF";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_ELLIPSE:
+		{
+			long a, b;
+			float Phi0, Phi;
+			unsigned short usPtr = 0;
 
-		// }
+			a = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			b = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			Phi0 = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			Phi = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_SET_ELLIPSE,%d,%d,%.3f,%.3f;"), a, b, Phi0, Phi);
+			break;
+		}
+		case CMD_LIST_ELLIPSE_ABS:
+		{
+			long mode, x, y;
+			float theta;
+			unsigned short usPtr = 0;
+
+			mode = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			x = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			y = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			theta = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_ELLIPSE_ABS,%d,%d,%d,%.3f;"), mode, x, y, theta);
+			break;
+		}
+		case CMD_LIST_ELLIPSE_REL:
+		{
+			long mode, x, y;
+			float theta;
+			unsigned short usPtr = 0;
+
+			mode = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			x = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			y = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			theta = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_ELLIPSE_REL,%d,%d,%d,%.3f;"), mode, x, y, theta);
+			break;
+		}
+		case CMD_LIST_SET_NG_RESET_POINT:
+		{
+			strLog = "LIST_SET_NG_RESET_POINT";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_ADD_X_EX:
+		{
+			strLog = "LIST_MOTION_ARC_ADD_X_EX";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_ADD_Y_EX:
+		{
+			strLog = "LIST_MOTION_ARC_ADD_Y_EX";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_ADD_TIME_EX:
+		{
+			strLog = "LIST_MOTION_ARC_ADD_TIME_EX";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_START_EX:
+		{
+			strLog = "LIST_MOTION_ARC_START_EX";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_RECORD_MARK_TIME:
+		{
+			strLog = "LIST_RECORD_MARK_TIME";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_POWER:
+		{
+			strLog = "LIST_SET_POWER";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_NG_LIST_JUMP:
+		{
+			strLog = "LIST_NG_LIST_JUMP";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_SCAN_FEEDBACK_MODE:
+		{
+			strLog = "LIST_SET_SCAN_FEEDBACK_MODE";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_PSO_MODE:
+		{
+			strLog = "LIST_SET_PSO_MODE";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_AMOF_SYNC:
+		{
+			strLog = "LIST_AMOF_SYNC";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_ADV_WOBBEL_MODE:
+		{
+			long lEnable, lUpdateCnt;
+			float theta1, theta2;
+			unsigned short usPtr = 0;
+
+			lEnable = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lUpdateCnt = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			theta1 = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			theta2 = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_SET_ADV_WOBBEL_MODE,%d,%d,%.3f,%.3f;"), lEnable, lUpdateCnt, theta1, theta2);
+			break;
+		}
+		case CMD_LIST_SET_ADV_WOBBEL_WAVE:
+		{
+			long lAmpV, lAmpH;
+			float theta1, start1, theta2, start2;
+			unsigned short usPtr = 0;
+
+			lAmpV = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			theta1 = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			start1 = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			lAmpH = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			theta2 = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			start2 = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			strLog.Format(_T("LIST_SET_ADV_WOBBEL_WAVE,%d,%.3f,%.3f,%d,%.3f,%.3f;"), lAmpV, theta1, start1, lAmpH, theta2, start2);
+			break;
+		}
+		case CMD_LIST_ENCODER_JUMP_UPDATE:
+		{
+			strLog = "LIST_ENCODER_JUMP_UPDATE";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_WOBBEL_EX:
+		{
+			long amplitude, lDelay;
+			float theta;
+			unsigned short usPtr = 0;
+
+			amplitude = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			theta = *(float *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(float);
+			lDelay = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			strLog.Format(_T("LIST_SET_ADV_WOBBEL_WAVE,%d,%.3f,%d;"), amplitude, theta, lDelay);
+			break;
+		}
+		case CMD_LIST_SET_IPG_PD_CMD:
+		{
+			strLog = "LIST_SET_IPG_PD_CMD";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_WAIT_IPG_PD:
+		{
+			strLog = "LIST_WAIT_IPG_PD;";
+			break;
+		}
+		case CMD_LIST_SET_IPG_DIGITAL_POWER:
+		{
+			strLog = "LIST_SET_IPG_DIGITAL_POWER";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_PIXEL_EX:
+		{
+			strLog = "LIST_SET_PIXEL_EX";
+			bRead_ulong = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_CUT_SCAN_PARAMS:
+		{
+			strLog = "LIST_SET_CUT_SCAN_PARAMS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_WOBBEL_EX2:
+		{
+			long minamp;
+			double dAmpInc;
+			unsigned short usPtr = 0;
+
+			minamp = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dAmpInc = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("LIST_SET_WOBBEL_EX2,%d,%.3f"), minamp, dAmpInc);
+			break;
+		}
+		case CMD_LIST_SET_SPIRAL_PARAM1:
+		{
+			long lIndex, lDir, lInCircle, lOutCircle, lStepMode;
+			double dVar;
+			unsigned short usPtr = 0;
+
+			lIndex = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lDir = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lInCircle = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lOutCircle = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lStepMode = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dVar = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("LIST_SET_SPIRAL_PARAM1,%d,%d,%d,%d,%d,%.3f"), lIndex, lDir, lInCircle, lOutCircle, lStepMode, dVar);
+			break;
+		}
+		case CMD_LIST_SET_SPIRAL_PARAM2:
+		{
+			long lIndex;
+			double dMaxAngle, dStAngle, dR;
+			unsigned short usPtr = 0;
+
+			lIndex = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dMaxAngle = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			dStAngle = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			dR = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("LIST_SET_SPIRAL_PARAM2,%d,%.3f,%.3f,%.3f"), lIndex, dMaxAngle, dStAngle, dR);
+			break;
+		}
+		case CMD_LIST_SPIRAL_ABS:
+		{
+			strLog = "LIST_SPIRAL_ABS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SPIRAL_REL:
+		{
+			strLog = "LIST_SPIRAL_REL";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_POWER_COR_PARAMS:
+		{
+			strLog = "LIST_SET_POWER_COR_PARAMS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_LASER_SIGNAL_DELAY:
+		{
+			strLog = "LIST_SET_LASER_SIGNAL_DELAY";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_ADD_R_EX:
+		{
+			strLog = "LIST_MOTION_ARC_ADD_R_EX";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_ADD_Z_EX:
+		{
+			strLog = "LIST_MOTION_ARC_ADD_Z_EX";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_MOTION_ARC_ADD_TIME2_EX:
+		{
+			strLog = "LIST_MOTION_ARC_ADD_TIME2_EX";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_MOTION_SPEED_POWER_PARAMS:
+		{
+			strLog = "LIST_SET_MOTION_SPEED_POWER_PARAMS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_MOTION_SPEED_UNIT_RATE:
+		{
+			strLog = "LIST_SET_MOTION_SPEED_UNIT_RATE";
+			bRead_double = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_ROT_CENTER:
+		{
+			strLog = "LIST_SET_ROT_CENTER";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_FLY_ROT:
+		{
+			strLog = "LIST_SET_FLY_ROT";
+			bRead_double = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_INT_FREQ_ALIGN_PARAMS:
+		{
+			strLog = "LIST_SET_INT_FREQ_ALIGN_PARAMS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_WAIT_ENCODER_TRIGGER:
+		{
+			strLog = "LIST_WAIT_ENCODER_TRIGGER;";
+			break;
+		}
+		case CMD_LIST_SET_EXEC_LIST_JUMP:
+		{
+			strLog = "LIST_SET_EXEC_LIST_JUMP";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_CURVE_DOTLINE_MODE:
+		{
+			strLog = "LIST_CURVE_DOTLINE_MODE";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_DASH_LINE_PARAMS:
+		{
+			long lMode, lPeriod;
+			double dDx, dDy;
+			unsigned short usPtr = 0;
+
+			lMode = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lPeriod = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			dDx = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			dDy = *(double *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(double);
+			strLog.Format(_T("LIST_DASH_LINE_PARAMS,%d,%d,%.3f,%.3f"), lMode, lPeriod, dDx, dDy);
+			break;
+		}
+		case CMD_LIST_DASH_LINE:
+		{
+			strLog = "LIST_DASH_LINE";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_EXT_START_POS:
+		{
+			strLog = "LIST_SET_EXT_START_POS";
+			bRead_long = TRUE;
+			break;
+		}
+		case CMD_LIST_SET_PWM_BURST_PARAMS:
+		{
+			strLog = "LIST_SET_PWM_BURST_PARAMS";
+			bRead_long = TRUE;
+			break;
+		}
 		default:
 		{
 			strLog.Format(_T("CMD0x%x,%dBytes;"), usCmd, usSize);
