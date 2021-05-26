@@ -39,8 +39,8 @@ protected:
 public:
 	CProgressCtrl m_progress;
 	BOOL Search_Dev(int iRetryTime,int iSearchTime);
-	DWORD m_dwCardNum; // 紀錄已偵測的板卡數量
-	char m_Address[MAX_DEVICE][256]; // 儲存各設備之 IP 位址
+	DWORD m_dwCardNum;
+	char m_Address[MAX_DEVICE][256];
 	LRESULT OnDialogShown(WPARAM, LPARAM);
 	CString m_strINIpath;
 	void GetINIFilePath();

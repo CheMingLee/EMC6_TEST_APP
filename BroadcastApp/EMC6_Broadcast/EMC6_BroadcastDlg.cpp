@@ -111,7 +111,7 @@ BOOL CEMC6_BroadcastDlg::OnInitDialog()
     if (iResult != 0) {
         CString str;
 
-		str.Format("WSAStartup failed with error: %d", iResult);
+		str.Format(_T("WSAStartup failed with error: %d"), iResult);
 		MessageBox(str);
 		EndDialog(IDCANCEL);
     }
@@ -186,7 +186,7 @@ BOOL CEMC6_BroadcastDlg::Search_Dev(int iRetryTime,int iSearchTime) //ms
     char broadcast = '1';
     if(setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) < 0)
     {
-        MessageBox("Error in setting Broadcast option");
+        MessageBox(_T("Error in setting Broadcast option"));
         closesocket(sock);
         return FALSE;
     }
@@ -288,12 +288,13 @@ LRESULT CEMC6_BroadcastDlg::OnDialogShown(WPARAM, LPARAM)
 	iRet = Search_Dev(2,2000);
 	if(iRet)
 	{
-		CString str;
+		CString strDEV, strAddress;
 
 		for(i = 0;i < m_dwCardNum;i++)
 		{
-			str.Format("DEV%d", i);
-			WritePrivateProfileString("DEVICE", str, m_Address[i], m_strINIpath);
+			strDEV.Format(_T("DEV%d"), i);
+			strAddress.Format(_T("%s"), m_Address[i]);
+			WritePrivateProfileString(_T("DEVICE"), strDEV, strAddress, m_strINIpath);
 		}
 	}
 
@@ -311,10 +312,12 @@ void CEMC6_BroadcastDlg::GetINIFilePath()
 	char dir[_MAX_DIR];
 	char fname[_MAX_FNAME];
 	char ext[_MAX_EXT];
+	CString strTmp;
 	
-	GetModuleFileName(NULL, szCurPath, MAX_PATH);
+	GetModuleFileNameA(NULL, szCurPath, MAX_PATH);
 	_splitpath_s(szCurPath, drive, dir, fname, ext);
-	m_strINIpath.Format("%s", drive);
-	m_strINIpath.Append(dir);
-	m_strINIpath.Append("DevIPAddress.ini");
+	m_strINIpath.Format(_T("%s"), drive);
+	strTmp.Format(_T("%s"), dir);
+	m_strINIpath.Append(strTmp);
+	m_strINIpath.Append(_T("DevIPAddress.ini"));
 }

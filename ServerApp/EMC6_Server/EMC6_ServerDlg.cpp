@@ -12,10 +12,28 @@
 #endif
 
 CRITICAL_SECTION g_CS;
-CString g_strLogPath;
+CString g_strLogPath, g_strINIpath;
 HANDLE g_hLogFile;
 char g_ReadBuffer[1024];
 char g_SendBuffer[1024];
+BOOL g_bLogEnable;
+
+void GetINIFilePath()
+{
+	char szCurPath[MAX_PATH];
+	char drive[_MAX_DRIVE];
+	char dir[_MAX_DIR];
+	char fname[_MAX_FNAME];
+	char ext[_MAX_EXT];
+	CString strTmp;
+	
+	GetModuleFileNameA(NULL, szCurPath, MAX_PATH);
+	_splitpath_s(szCurPath, drive, dir, fname, ext);
+	g_strINIpath.Format(_T("%s"), drive);
+	strTmp.Format(_T("%s"), dir);
+	g_strINIpath.Append(strTmp);
+	g_strINIpath.Append(_T("config.ini"));
+}
 
 void GetLogFilePath()
 {
@@ -24,11 +42,13 @@ void GetLogFilePath()
 	char dir[_MAX_DIR];
 	char fname[_MAX_FNAME];
 	char ext[_MAX_EXT];
+	CString strTmp;
 	
-	GetModuleFileName(NULL, szCurPath, MAX_PATH);
+	GetModuleFileNameA(NULL, szCurPath, MAX_PATH);
 	_splitpath_s(szCurPath, drive, dir, fname, ext);
 	g_strLogPath.Format(_T("%s"), drive);
-	g_strLogPath.Append(dir);
+	strTmp.Format(_T("%s"), dir);
+	g_strLogPath.Append(strTmp);
 	g_strLogPath.Append(CTime::GetCurrentTime().Format("%Y%m%d"));
 	g_strLogPath.Append(_T(".log"));
 }
@@ -40,22 +60,28 @@ void WriteLog(CString strMsg)
 	strTime = CTime::GetCurrentTime().Format("%H:%M:%S - ");
 	str = strTime + strMsg;
 	str.Append(_T("\n"));
-	AfxGetApp()->m_pMainWnd->GetDlgItem(IDC_STATIC_LOG)->SetWindowTextA(str);
-
-	EnterCriticalSection(&g_CS);
-    SetFilePointer(g_hLogFile, 0, NULL, FILE_END);
-    WriteFile(g_hLogFile, str, str.GetLength(), NULL, NULL);
-	LeaveCriticalSection(&g_CS);
+	AfxGetApp()->m_pMainWnd->GetDlgItem(IDC_STATIC_LOG)->SetWindowText(str);
+	
+	if(g_bLogEnable)
+	{
+		EnterCriticalSection(&g_CS);
+		SetFilePointer(g_hLogFile, 0, NULL, FILE_END);
+		WriteFile(g_hLogFile, str, str.GetLength(), NULL, NULL);
+		LeaveCriticalSection(&g_CS);
+	}
 }
 
 BOOL OpenLog()
 {
-	LPCWSTR pstrPath;
+	if(g_bLogEnable)
+	{
+		LPCWSTR pstrPath;
 
-	pstrPath = g_strLogPath.AllocSysString();
-	g_hLogFile = CreateFileW(pstrPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    if(g_hLogFile == INVALID_HANDLE_VALUE)
-		return FALSE;
+		pstrPath = g_strLogPath.AllocSysString();
+		g_hLogFile = CreateFileW(pstrPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		if(g_hLogFile == INVALID_HANDLE_VALUE)
+			return FALSE;
+	}
 
 	return TRUE;
 }
@@ -3366,6 +3392,10 @@ BOOL CEMC6_ServerDlg::OnInitDialog()
 
 	InitializeCriticalSection(&g_CS);
 	
+	GetINIFilePath();
+
+	g_bLogEnable = GetPrivateProfileInt(_T("LOG"), _T("ENABLE"), 0, g_strINIpath);
+
 	GetLogFilePath();
 	if(!OpenLog())
 	{
