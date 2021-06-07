@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "EMC6_Server.h"
 #include "EMC6_ServerDlg.h"
-
+#include "math.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -17,6 +17,27 @@ HANDLE g_hLogFile;
 char g_ReadBuffer[1024];
 char g_SendBuffer[1024];
 BOOL g_bLogEnable;
+long g_lMotionStatus;
+ROTARY_PARAM g_MotionParams[MAX_AXIS];
+POSITION_PARAM g_PosParams[MAX_AXIS];
+JOG_PARAM g_JogParams[MAX_AXIS];
+BOOL g_bStopFlag[MAX_AXIS];
+double g_dDistance[MAX_AXIS];
+double g_dStartPos[MAX_AXIS];
+double g_dDirection[MAX_AXIS];
+double g_dVel[MAX_AXIS];
+double g_dTime[MAX_AXIS];
+double g_dVm[MAX_AXIS];
+double g_dAcc[MAX_AXIS];
+double g_dS[MAX_AXIS];
+double g_dS1[MAX_AXIS];
+double g_dS2[MAX_AXIS];
+double g_dS3[MAX_AXIS];
+double g_dT1[MAX_AXIS];
+double g_dT2[MAX_AXIS];
+double g_dT3[MAX_AXIS];
+double g_dTtotal[MAX_AXIS];
+double g_dt;
 
 void GetINIFilePath()
 {
@@ -360,7 +381,8 @@ int CmdTransfer(SOCKET sd_connect)
 			strCmd = "GET_MOTION_PULSE_COUNT";
 			bRead_long = TRUE;
 			usDataSize = 4;
-			lData[0] = 250;
+			long lAxis = *((long *)&g_ReadBuffer[6]);
+			lData[0] = (long)g_PosParams[lAxis].m_dCmdPos;
 			strTmp.Format(_T("%d"), lData[0]);
 			bReplyNull = FALSE;
 			break;
@@ -380,7 +402,7 @@ int CmdTransfer(SOCKET sd_connect)
 			strCmd = "GET_MOTION_STATUS";
 			bRead_long = TRUE;
 			usDataSize = 4;
-			lData[0] = 0;
+			lData[0] = g_lMotionStatus;
 			strTmp.Format(_T("%d"), lData[0]);
 			bReplyNull = FALSE;
 			break;
@@ -951,12 +973,107 @@ int CmdTransfer(SOCKET sd_connect)
 		{
 			strCmd = "MOTION_MOVETO";
 			bRead_long = TRUE;
+			unsigned short usPtr = 0;
+			long lAxis = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			long lTarPos = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_PosParams[lAxis].m_dTarPos = (double)lTarPos;
+			g_dStartPos[lAxis] = g_PosParams[lAxis].m_dCmdPos;
+			g_dDistance[lAxis] = g_PosParams[lAxis].m_dTarPos - g_dStartPos[lAxis];
+			if (g_dDistance[lAxis] == 0)
+			{
+				g_PosParams[lAxis].m_iMode = MODE_IDLE;
+				break;
+			}
+			else if (g_dDistance[lAxis] < 0)
+			{
+				g_dDirection[lAxis] = -1.0;
+				g_dDistance[lAxis] = fabs(g_dDistance[lAxis]);
+			}
+			else
+			{
+				g_dDirection[lAxis] = 1.0;
+			}			
+			g_dS1[lAxis] = ((double)g_MotionParams[lAxis].m_lIniSpeed + 0.5 * (double)g_MotionParams[lAxis].m_lRotarySpeed) * ((double)g_MotionParams[lAxis].m_lAccTime / 1000.0);
+			g_dS3[lAxis] = g_dS1[lAxis];
+			g_dS2[lAxis] = g_dDistance[lAxis] - g_dS1[lAxis] - g_dS3[lAxis];
+			if (g_dS2[lAxis] <= 0.0)
+			{
+				if(g_dDistance[lAxis] <= 2.0 * g_MotionParams[lAxis].m_lIniSpeed * ((double)g_MotionParams[lAxis].m_lAccTime / 1000.0))
+				{
+					g_dVm[lAxis] = (double)g_MotionParams[lAxis].m_lIniSpeed;
+					g_dAcc[lAxis] = 0.0;
+					g_dT1[lAxis] = 0.0;
+					g_dT2[lAxis] = g_dDistance[lAxis] / g_dVm[lAxis];
+					g_dT3[lAxis] = 0.0;
+					g_dTtotal[lAxis] = g_dT2[lAxis];
+					g_dS1[lAxis] = 0.0;
+					g_dS2[lAxis] = g_dDistance[lAxis];
+					g_dS3[lAxis] = 0.0;
+				}
+				else
+				{
+					g_dVm[lAxis] = g_dDistance[lAxis] * 1000.0 / (double)g_MotionParams[lAxis].m_lAccTime - (double)g_MotionParams[lAxis].m_lIniSpeed;
+					g_dAcc[lAxis] = (g_dVm[lAxis] - (double)g_MotionParams[lAxis].m_lIniSpeed) * 1000.0 / (double)g_MotionParams[lAxis].m_lAccTime;
+					g_dT1[lAxis] = (double)g_MotionParams[lAxis].m_lAccTime / 1000.0;
+					g_dT2[lAxis] = 0.0;
+					g_dT3[lAxis] = g_dT1[lAxis];
+					g_dTtotal[lAxis] = g_dT1[lAxis] + g_dT3[lAxis];
+					g_dS1[lAxis] = 0.5 * g_dDistance[lAxis];
+					g_dS2[lAxis] = 0.0;
+					g_dS3[lAxis] = g_dDistance[lAxis] - g_dS1[lAxis];
+				}
+			}
+			else
+			{
+				g_dVm[lAxis] = (double)g_MotionParams[lAxis].m_lRotarySpeed;
+				g_dAcc[lAxis] = (g_dVm[lAxis] - (double)g_MotionParams[lAxis].m_lIniSpeed) * 1000.0 / (double)g_MotionParams[lAxis].m_lAccTime;
+				g_dT1[lAxis] = (double)g_MotionParams[lAxis].m_lAccTime / 1000.0;
+				g_dT2[lAxis] = g_dS2[lAxis] / g_dVm[lAxis];
+				g_dT3[lAxis] = g_dT1[lAxis];
+				g_dTtotal[lAxis] = g_dT1[lAxis] + g_dT2[lAxis] + g_dT3[lAxis];
+			}
+			g_PosParams[lAxis].m_iMode = MODE_MOVETO;
 			break;
 		}
 		case CMD_SET_MOTION_PARAM1:
 		{
 			strCmd = "SET_MOTION_PARAM1";
 			bRead_long = TRUE;
+			unsigned short usPtr = 0;
+			long lAxis = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_lAccTime = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_lRotarySpeed = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_lPulseCount = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_bGoTo0_MarkEnd = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_lMotorCount = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_bAH_InPos = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_bAH_Home = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_lIniSpeed = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_bReverse = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_bAH_Limit = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_lHomeSpeed = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_lHomeBackSpeed = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_bEnable = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_lINPos_TimeOut = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_MotionParams[lAxis].m_lINPos_Delay = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
 			break;
 		}
 		case CMD_SET_MOTION_PARAM2:
@@ -1012,14 +1129,43 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_JOGSTART:
 		{
+			long lAxis, lSpeed, lAccTime, lDir;
+			
 			strCmd = "JOGSTART";
 			bRead_long = TRUE;
+			unsigned short usPtr = 0;
+			lAxis = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lSpeed = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lAccTime = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lDir = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_JogParams[lAxis].m_dSpeed = (double)lSpeed;
+			g_JogParams[lAxis].m_lAccTime = lAccTime;
+			g_JogParams[lAxis].m_dAcc = g_JogParams[lAxis].m_dSpeed / g_JogParams[lAxis].m_lAccTime;
+			if (lDir > 0)
+			{
+				g_JogParams[lAxis].m_iDir = -1;
+				g_JogParams[lAxis].m_dSpeed = -fabs(g_JogParams[lAxis].m_dSpeed);
+				g_JogParams[lAxis].m_dAcc = -fabs(g_JogParams[lAxis].m_dAcc);
+			}
+			else
+			{
+				g_JogParams[lAxis].m_iDir = 1;
+				g_JogParams[lAxis].m_dSpeed = fabs(g_JogParams[lAxis].m_dSpeed);
+				g_JogParams[lAxis].m_dAcc = fabs(g_JogParams[lAxis].m_dAcc);
+			}
+			g_PosParams[lAxis].m_iMode = MODE_JOG;
 			break;
 		}
 		case CMD_JOGEND:
 		{
 			strCmd = "JOGEND";
 			bRead_long = TRUE;
+			long lAxis = *(long *)&g_ReadBuffer[6];
+			g_PosParams[lAxis].m_iMode = MODE_JOGEND;
 			break;
 		}
 		case CMD_SET_MOTION_BACKSPACE:
@@ -1032,6 +1178,8 @@ int CmdTransfer(SOCKET sd_connect)
 		{
 			strCmd = "SET_MOTION_HOME_REAL";
 			bRead_long = TRUE;
+			long lAxis = *(long *)&g_ReadBuffer[6];
+			g_PosParams[lAxis].m_iMode = MODE_HOME;
 			break;
 		}
 		case CMD_RESET_ENCODER:
@@ -1089,8 +1237,16 @@ int CmdTransfer(SOCKET sd_connect)
 		}
 		case CMD_RESET_PULSE_COUNT:
 		{
+			long lAxis, lPulse;
+
 			strCmd = "RESET_PULSE_COUNT";
 			bRead_long = TRUE;
+			unsigned short usPtr = 0;
+			lAxis = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			lPulse = *(long *)&g_ReadBuffer[6+usPtr];
+			usPtr += sizeof(long);
+			g_PosParams[lAxis].m_dCmdPos = (double)lPulse;
 			break;
 		}
 		case CMD_SET_LABEL:
@@ -1155,6 +1311,10 @@ int CmdTransfer(SOCKET sd_connect)
 		case CMD_STOP_EXEC:
 		{
 			strCmd = "STOP_EXEC";
+			for (int i = 0; i < MAX_AXIS; i++)
+			{
+				g_bStopFlag[i] = TRUE;
+			}
 			break;
 		}
 		case CMD_START_LIST:
@@ -3184,6 +3344,192 @@ DWORD WINAPI CmdHandler(void* sd_)
 	return 0;
 }
 
+void GetCmdPos_ConstVel_Jog(double dSpeed, int iAxis)
+{
+	g_PosParams[iAxis].m_dCmdPos += dSpeed * g_dt;
+	g_dVel[iAxis] = dSpeed;
+}
+
+int GetCmdPos_Acc_Jog(double dSpeed, double dAcc, int iAxis)
+{
+	if (fabs(g_dVel[iAxis]) >= fabs(dSpeed))
+	{
+		GetCmdPos_ConstVel_Jog(dSpeed, iAxis);
+		return 0;
+	}
+	else if (fabs(g_dVel[iAxis] + dAcc * g_dt) > fabs(dSpeed))
+	{
+		double dS, dt;
+		dS = (pow(dSpeed, 2) - pow(g_dVel[iAxis], 2)) / (2 * dAcc);
+		dt = g_dt - ((dSpeed - g_dVel[iAxis]) / dAcc);
+		g_PosParams[iAxis].m_dCmdPos += dS + dSpeed * dt;
+		g_dVel[iAxis] = dSpeed;
+
+		return 0;
+	}
+
+	g_PosParams[iAxis].m_dCmdPos += g_dVel[iAxis] * g_dt + 0.5 * dAcc * pow(g_dt, 2);
+	g_dVel[iAxis] += dAcc * g_dt;
+
+	return 1;
+}
+
+int GetCmdPos_Dec_Jog(double dSpeed, double dAcc, int iAxis)
+{
+	if ((dSpeed > 0 && (g_dVel[iAxis] - dAcc * g_dt) < 0) || (dSpeed < 0 && (g_dVel[iAxis] - dAcc * g_dt) > 0))
+	{
+		g_PosParams[iAxis].m_dCmdPos += pow(g_dVel[iAxis], 2) / (2 * dAcc);
+		g_dVel[iAxis] = 0;
+
+		return 0;
+	}
+	
+	g_PosParams[iAxis].m_dCmdPos += g_dVel[iAxis] * g_dt - 0.5 * dAcc * pow(g_dt, 2);
+	g_dVel[iAxis] -= dAcc * g_dt;
+
+	return 1;
+}
+
+void GetCmdPos_Motion(int iAxis)
+{
+	g_dTime[iAxis] += g_dt;
+	if (g_dTime[iAxis] <= g_dT1[iAxis])
+	{
+		g_dVel[iAxis] = (double)g_MotionParams[iAxis].m_lIniSpeed + g_dAcc[iAxis] * g_dTime[iAxis];
+		g_dS[iAxis] = 0.5 * g_dAcc[iAxis] * pow(g_dTime[iAxis], 2);
+		g_PosParams[iAxis].m_dCmdPos = g_dStartPos[iAxis] + g_dS[iAxis] * g_dDirection[iAxis];
+	}
+	else if (g_dTime[iAxis] > g_dT1[iAxis] && g_dTime[iAxis] <= g_dT1[iAxis] + g_dT2[iAxis])
+	{
+		g_dVel[iAxis] = g_MotionParams[iAxis].m_lRotarySpeed;
+		g_dS[iAxis] = g_dS1[iAxis] + g_MotionParams[iAxis].m_lRotarySpeed * (g_dTime[iAxis] - g_dT1[iAxis]);
+		g_PosParams[iAxis].m_dCmdPos = g_dStartPos[iAxis] + g_dS[iAxis] * g_dDirection[iAxis];
+	}
+	else if (g_dTime[iAxis] > g_dT1[iAxis] + g_dT2[iAxis] && g_dTime[iAxis] <= g_dTtotal[iAxis])
+	{
+		g_dVel[iAxis] = g_dVm[iAxis] - g_dAcc[iAxis] * (g_dTime[iAxis] - g_dT1[iAxis] - g_dT2[iAxis]);
+		g_dS[iAxis] = g_dS1[iAxis] + g_dS2[iAxis] + g_dVm[iAxis] * (g_dTime[iAxis] - g_dT1[iAxis] - g_dT2[iAxis]) - 0.5 * g_dAcc[iAxis] * pow((g_dTime[iAxis] - g_dT1[iAxis] - g_dT2[iAxis]), 2);
+		g_PosParams[iAxis].m_dCmdPos = g_dStartPos[iAxis] + g_dS[iAxis] * g_dDirection[iAxis];
+	}
+	else
+	{
+		g_dVel[iAxis] = (double)g_MotionParams[iAxis].m_lIniSpeed;
+		g_PosParams[iAxis].m_dCmdPos = g_PosParams[iAxis].m_dTarPos;
+		g_PosParams[iAxis].m_iMode = MODE_IDLE;
+	}
+}
+
+DWORD WINAPI MotionHandler(void* pData)
+{
+	clock_t timeStart, timeEnd;
+	int i, iRet;
+	long mask;
+
+	timeStart = clock();
+	for (i = 0; i < MAX_AXIS; i++)
+	{
+		g_PosParams[i].m_iMode = MODE_IDLE;
+		g_PosParams[i].m_dCmdPos = 0.0;
+		g_PosParams[i].m_dTarPos = 0.0;
+		g_bStopFlag[i] = FALSE;
+	}
+
+	g_lMotionStatus = 0;
+	g_dt = 10.0 / 1000.0;
+	
+	while(1)
+	{
+		timeEnd = clock();
+		if(timeEnd - timeStart >= g_dt * 1000.0)
+		{
+			for (i = 0; i < MAX_AXIS; i++)
+			{
+				mask = 1 << i;
+				
+				switch (g_PosParams[i].m_iMode)
+				{
+				case MODE_IDLE:
+				{
+					g_lMotionStatus &= ~mask;
+					g_bStopFlag[i] = FALSE;
+					g_dVel[i] = 0.0;
+					g_dTime[i] = 0.0;
+					g_dS[i] = 0.0;
+					break;
+				}
+				case MODE_MOVETO:
+				{
+					g_lMotionStatus |= mask;
+					if (!g_bStopFlag[i])
+					{
+						GetCmdPos_Motion(i);
+					}
+					else // Stop
+					{	
+						double dStopSpeed, dStopAcc;
+						
+						dStopSpeed = g_MotionParams[i].m_lRotarySpeed;
+						dStopAcc = g_dAcc[i];
+						if (g_dDirection[i] < 0)
+						{
+							dStopSpeed = -fabs(dStopSpeed);
+							dStopAcc = -fabs(dStopAcc);
+							g_dVel[i] = -fabs(g_dVel[i]);
+						}
+						
+						iRet = GetCmdPos_Dec_Jog(dStopSpeed, dStopAcc, i);
+						if (iRet <= 0)
+						{
+							g_PosParams[i].m_iMode = MODE_IDLE;
+						}
+					}
+					break;
+				}
+				case MODE_JOG:
+				{
+					g_lMotionStatus |= mask;
+					if (!g_bStopFlag[i])
+					{
+						iRet = GetCmdPos_Acc_Jog(g_JogParams[i].m_dSpeed, g_JogParams[i].m_dAcc, i);
+						if (iRet <= 0)
+						{
+							GetCmdPos_ConstVel_Jog(g_JogParams[i].m_dSpeed, i);
+						}
+					}
+					else
+					{
+						GetCmdPos_Dec_Jog(g_JogParams[i].m_dSpeed, g_JogParams[i].m_dAcc, i);
+						g_PosParams[i].m_iMode = MODE_JOGEND;
+					}
+					break;
+				}
+				case MODE_JOGEND:
+				{
+					g_lMotionStatus |= mask;
+					iRet = GetCmdPos_Dec_Jog(g_JogParams[i].m_dSpeed, g_JogParams[i].m_dAcc, i);
+					if (iRet <= 0)
+					{
+						g_PosParams[i].m_iMode = MODE_IDLE;
+					}
+					break;
+				}
+				case MODE_HOME:
+				{
+					g_PosParams[i].m_dCmdPos = 0.0;
+					g_PosParams[i].m_iMode = MODE_IDLE;
+					break;
+				}
+				default:
+					break;
+				}
+			}
+			timeStart = timeEnd;
+		}
+	}
+
+	return 0;
+}
+
 // CAboutDlg dialog used for App About
 
 class CAboutDlg : public CDialog
@@ -3575,8 +3921,9 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 		SOCKET sd = accept(m_sock_server, (sockaddr*)&sinRemote, &ilen);
         if (sd != INVALID_SOCKET)
 		{
-            DWORD nThreadID;
-            CreateThread(0, 0, CmdHandler, (void*)sd, 0, &nThreadID);
+            DWORD nThread1ID, nThread2ID;
+            CreateThread(0, 0, CmdHandler, (void*)sd, 0, &nThread1ID);
+			CreateThread(0, 0, MotionHandler, (void*)NULL, 0, &nThread2ID);
         }
 	}
 }

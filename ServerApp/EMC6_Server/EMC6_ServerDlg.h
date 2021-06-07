@@ -11,6 +11,45 @@
 #define PORT_SERVER 10000
 #define PORT_BROADCAST 10001
 
+#define MAX_AXIS 4
+
+#define MODE_IDLE 0
+#define MODE_MOVETO 1
+#define MODE_JOG 2
+#define MODE_JOGEND 3
+#define MODE_HOME 4
+
+//motion parameter structure 
+typedef	struct rotary_param {
+	long			m_lAccTime;				// unit[ms]
+	long			m_lRotarySpeed;			// motion Speed [pulse/sec]
+	long			m_lPulseCount;			// resolution : [pulse counts/degree * 1000] or  x-y-z : [pulse/mm * 1000]
+	long			m_bGoTo0_MarkEnd;		// mark end motion to zero. (reserve, it is not used) 
+	long			m_lMotorCount;			// pulse counts (reserve, it is not used)
+	long			m_bAH_InPos;			// inpos snesor signal sensibility level (1/0)
+	long			m_bAH_Home;				// mome snesor signal sensibility level (1/0)
+	long			m_lIniSpeed;			// Init Speed [pulse/sec]
+	long			m_bReverse;				// motion reverse
+	long			m_bAH_Limit;			// limit snesor signal sensibility level (1/0)
+	long			m_lHomeSpeed;			// enter Home Speed [pulse/sec]
+	long			m_lHomeBackSpeed;		// leave Home Speed [pulse/sec]
+	long			m_bEnable;				// enable (reserve, it is not used)
+	long			m_lINPos_TimeOut;		// inpos sensor Timer out [ms]
+	long			m_lINPos_Delay;			// Motion inposition dleay [ms]
+} ROTARY_PARAM;
+
+typedef struct position_param {
+	int m_iMode;
+	double m_dTarPos; // pulse
+	double m_dCmdPos; // pulse
+} POSITION_PARAM;
+
+typedef struct jog_param {
+	int m_iDir;
+	double m_dSpeed;
+	long m_lAccTime;
+	double m_dAcc;
+} JOG_PARAM;
 
 // CEMC6_ServerDlg dialog
 class CEMC6_ServerDlg : public CDialog
