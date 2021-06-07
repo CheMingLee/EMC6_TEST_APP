@@ -1144,7 +1144,7 @@ int CmdTransfer(SOCKET sd_connect)
 			usPtr += sizeof(long);
 			g_JogParams[lAxis].m_dSpeed = (double)lSpeed;
 			g_JogParams[lAxis].m_lAccTime = lAccTime;
-			g_JogParams[lAxis].m_dAcc = g_JogParams[lAxis].m_dSpeed / g_JogParams[lAxis].m_lAccTime;
+			g_JogParams[lAxis].m_dAcc = g_JogParams[lAxis].m_dSpeed * 1000.0 / g_JogParams[lAxis].m_lAccTime;
 			if (lDir > 0)
 			{
 				g_JogParams[lAxis].m_iDir = -1;
@@ -1165,7 +1165,10 @@ int CmdTransfer(SOCKET sd_connect)
 			strCmd = "JOGEND";
 			bRead_long = TRUE;
 			long lAxis = *(long *)&g_ReadBuffer[6];
-			g_PosParams[lAxis].m_iMode = MODE_JOGEND;
+			if(g_PosParams[lAxis].m_iMode == MODE_JOG)
+			{
+				g_PosParams[lAxis].m_iMode = MODE_JOGEND;
+			}
 			break;
 		}
 		case CMD_SET_MOTION_BACKSPACE:
@@ -3354,7 +3357,7 @@ int GetCmdPos_Acc_Jog(double dSpeed, double dAcc, int iAxis)
 {
 	if (fabs(g_dVel[iAxis]) >= fabs(dSpeed))
 	{
-		GetCmdPos_ConstVel_Jog(dSpeed, iAxis);
+		g_dVel[iAxis] = dSpeed;
 		return 0;
 	}
 	else if (fabs(g_dVel[iAxis] + dAcc * g_dt) > fabs(dSpeed))
@@ -3524,6 +3527,7 @@ DWORD WINAPI MotionHandler(void* pData)
 				}
 			}
 			timeStart = timeEnd;
+			Sleep(3);
 		}
 	}
 
@@ -3628,11 +3632,8 @@ BOOL CEMC6_ServerDlg::OnInitDialog()
 	m_bActive = false;
 
 	InitializeCriticalSection(&g_CS);
-	
 	GetINIFilePath();
-
 	g_bLogEnable = GetPrivateProfileInt(_T("LOG"), _T("ENABLE"), 0, g_strINIpath);
-
 	GetLogFilePath();
 	if(!OpenLog())
 	{
@@ -3642,6 +3643,8 @@ BOOL CEMC6_ServerDlg::OnInitDialog()
 		MessageBox(strDateTime + strLog);
 		EndDialog(IDCANCEL);
 	}
+	DWORD nThreadID;
+	CreateThread(0, 0, MotionHandler, (void*)NULL, 0, &nThreadID);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -3921,10 +3924,11 @@ void CEMC6_ServerDlg::OnBnClickedButtonStart()
 		SOCKET sd = accept(m_sock_server, (sockaddr*)&sinRemote, &ilen);
         if (sd != INVALID_SOCKET)
 		{
-            DWORD nThread1ID, nThread2ID;
-            CreateThread(0, 0, CmdHandler, (void*)sd, 0, &nThread1ID);
-			CreateThread(0, 0, MotionHandler, (void*)NULL, 0, &nThread2ID);
+            DWORD nThreadID;
+            CreateThread(0, 0, CmdHandler, (void*)sd, 0, &nThreadID);
         }
+
+		Sleep(20);
 	}
 }
 
